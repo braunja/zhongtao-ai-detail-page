@@ -2124,7 +2124,7 @@
             <div>
               <div class="modal-title" id="configTitle">API 接口配置</div>
               <div class="modal-desc">
-                这里可以填写真实图片生成接口。推荐使用你自己的工作流接口，接收上传图片和提示词后返回生成结果。
+                这里可以填写真实图片生成接口。模型名不需要自动获取，直接手动填写你接口支持的名称或工作流名即可。
               </div>
             </div>
             <button class="button small" id="closeConfigBtn" type="button">关闭</button>
@@ -2153,7 +2153,17 @@
               </div>
               <div class="field">
                 <label for="modelName">模型 / 工作流名称</label>
-                <input id="modelName" type="text" placeholder="gpt-image-1 / custom-workflow" />
+                <input id="modelName" type="text" list="modelNamePresetList" placeholder="gpt-image-1 / custom-workflow" />
+                <datalist id="modelNamePresetList">
+                  <option value="gpt-image-1"></option>
+                  <option value="gpt-4.1-mini"></option>
+                  <option value="gemini-2.5-flash"></option>
+                  <option value="gemini-2.5-pro"></option>
+                  <option value="custom-workflow"></option>
+                </datalist>
+                <div class="field-help">
+                  不需要获取模型列表，直接填写接口实际支持的模型名，或者你工作流里定义的名称。
+                </div>
               </div>
               <div class="field">
                 <label for="sizeValue">生成尺寸</label>
@@ -2162,6 +2172,9 @@
               <div class="field">
                 <label for="outputCount">输出张数</label>
                 <input id="outputCount" type="number" min="1" max="12" step="1" />
+              </div>
+              <div class="field-help">
+                如果你的平台不提供模型列表，这里也没关系，页面会把你手填的模型名直接传给接口。
               </div>
             </div>
 
@@ -2704,7 +2717,7 @@
         const modeLabel = config.mode === "openai-images" ? "OpenAI Images 兼容" : "自定义工作流";
         apiPill.textContent = hasConfig ? `${modeLabel} · 已保存` : `${modeLabel} · 未配置`;
         apiSummary.textContent = hasConfig
-          ? `${modeLabel} / ${buildEndpoint(config) || "接口待填写"} / ${config.modelName}`
+          ? `${modeLabel} / ${buildEndpoint(config) || "接口待填写"} / ${config.modelName || "模型待填写"}`
           : "未配置，先在“管理”里填入接口";
         promptSummary.textContent = truncate(promptInput.value || config.promptTemplate, 72);
         const fileCount = state.files.length;
@@ -2827,6 +2840,9 @@
           new URL(endpoint);
         } catch {
           throw new Error("接口地址格式不正确，请检查 API Base URL 和接口路径。");
+        }
+        if (!String(config.modelName || "").trim()) {
+          throw new Error("请先填写模型 / 工作流名称。页面不会自动拉取模型列表。");
         }
         return endpoint;
       }
@@ -3369,7 +3385,7 @@
       function testConfig() {
         try {
           const endpoint = validateConfig();
-          showToast("配置检查通过", `当前接口地址：${endpoint}`);
+          showToast("配置检查通过", `接口地址：${endpoint}，模型：${state.config.modelName}`);
         } catch (error) {
           showToast("配置未通过", error?.message || "请检查接口字段。");
         }
