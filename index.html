@@ -2217,7 +2217,7 @@
         mode: "custom-json",
         apiBaseUrl: "",
         apiKey: "",
-        customEndpoint: "/generate/product-images",
+        customEndpoint: "/v1beta/models/{model}",
         modelName: "gpt-image-1",
         sizeValue: "1200",
         outputCount: 4,
@@ -2672,7 +2672,7 @@
 
       function buildEndpoint(config) {
         const base = String(config.apiBaseUrl || "").trim();
-        const endpoint = String(config.customEndpoint || "").trim();
+        const endpoint = String(config.customEndpoint || "").trim().replaceAll("{model}", encodeURIComponent(normalizeModelName(config.modelName) || ""));
         if (/^https?:\/\//i.test(endpoint)) return endpoint;
         if (!base) return endpoint;
         try {
@@ -2736,6 +2736,17 @@
         modelNamePresetList.innerHTML = list.map((name) => `<option value="${escapeAttr(name)}"></option>`).join("");
       }
 
+      function syncEndpointTemplateFromModel() {
+        const base = String(apiBaseUrlInput.value || state.config.apiBaseUrl || "").trim();
+        const model = normalizeModelName(modelNameInput.value || state.config.modelName);
+        if (!base || !model) return;
+        if (/googleapis\.com/i.test(base) || /generativelanguage/i.test(base)) {
+          if (!String(customEndpointInput.value || "").trim() || String(customEndpointInput.value || "").includes("{model}")) {
+            customEndpointInput.value = `/v1beta/models/{model}`;
+          }
+        }
+      }
+
       async function fetchModelsFromEndpoint() {
         const config = state.config;
         const endpoint = buildEndpoint(config);
@@ -2774,6 +2785,9 @@
             const body = await response.json();
             const models = normalizeModelList(body);
             if (models.length) {
+              if (!String(customEndpointInput.value || "").trim() || String(customEndpointInput.value || "").includes("{model}")) {
+                syncEndpointTemplateFromModel();
+              }
               return models;
             }
           } catch {
@@ -2795,6 +2809,7 @@
         modalPromptInput.value = state.config.promptTemplate;
         promptInput.value = state.config.promptTemplate;
         modelNameHelp.textContent = "页面会尝试从接口自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。";
+        syncEndpointTemplateFromModel();
         updateSummaryCards();
         updatePayloadPreview();
       }
@@ -2866,6 +2881,12 @@
         payloadPreview.textContent = JSON.stringify(preview, null, 2);
       }
 
+      function syncEndpointWhenModelChanges() {
+        syncEndpointTemplateFromModel();
+        updatePayloadPreview();
+        updateSummaryCards();
+      }
+
       async function refreshModelOptions({ notify = true } = {}) {
         try {
           const models = await fetchModelsFromEndpoint();
@@ -2923,6 +2944,8 @@
           outputCount: Math.max(1, Math.min(12, Number(outputCountInput.value || defaultConfig.outputCount))),
           promptTemplate: modalPromptInput.value.trim() || defaultConfig.promptTemplate,
         });
+        syncEndpointTemplateFromModel();
+        state.config.customEndpoint = customEndpointInput.value.trim();
         sizeValueInput.value = String(state.config.sizeValue || defaultConfig.sizeValue);
         promptInput.value = state.config.promptTemplate;
         saveConfigToStorage();
@@ -3539,7 +3562,6 @@
       saveConfigBtn.addEventListener("click", saveModalConfig);
       restoreDefaultBtn.addEventListener("click", restoreDefaults);
       testConfigBtn.addEventListener("click", testConfig);
-      refreshModelsBtn.addEventListener("click", () => refreshModelOptions());
       savePromptBtn.addEventListener("click", savePromptTemplate);
       startBtn.addEventListener("click", startGeneration);
       clearBtn.addEventListener("click", resetSession);
@@ -3571,6 +3593,12 @@
       sizeValueInput.addEventListener("input", updatePayloadPreview);
       outputCountInput.addEventListener("input", updatePayloadPreview);
       providerModeInput.addEventListener("change", updatePayloadPreview);
+      apiBaseUrlInput.addEventListener("input", () => {
+        syncEndpointTemplateFromModel();
+        updatePayloadPreview();
+      });
+      modelNameInput.addEventListener("change", syncEndpointWhenModelChanges);
+      refreshModelsBtn?.addEventListener("click", () => refreshModelOptions());
       apiBaseUrlInput.addEventListener("change", () => refreshModelOptions({ notify: false }));
 
       window.addEventListener("keydown", (event) => {
