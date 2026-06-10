@@ -1,0 +1,3233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>中涛 AI · 电商详情页工坊</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Noto+Serif+SC:wght@700;800&display=swap");
+
+      :root {
+        --bg: #06070b;
+        --bg-2: #090b10;
+        --panel: rgba(18, 22, 30, 0.74);
+        --panel-strong: rgba(22, 26, 36, 0.92);
+        --line: rgba(255, 255, 255, 0.08);
+        --line-strong: rgba(255, 255, 255, 0.14);
+        --text: #f4f7fb;
+        --muted: rgba(244, 247, 251, 0.68);
+        --accent: #8dd3ff;
+        --accent-2: #7c8fff;
+        --accent-3: #ffd37b;
+        --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+        --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.22);
+        --radius-xl: 28px;
+        --radius-lg: 22px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+        --font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        --font-serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        color: var(--text);
+        background:
+          radial-gradient(circle at 10% 8%, rgba(141, 211, 255, 0.18), transparent 16%),
+          radial-gradient(circle at 88% 14%, rgba(124, 143, 255, 0.16), transparent 18%),
+          radial-gradient(circle at 48% 108%, rgba(255, 211, 123, 0.12), transparent 24%),
+          linear-gradient(180deg, #090b10 0%, #06070b 38%, #040509 100%);
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: radial-gradient(circle at center, black 20%, transparent 78%);
+        opacity: 0.22;
+      }
+
+      .shell {
+        width: min(1440px, calc(100vw - 32px));
+        margin: 18px auto 32px;
+        position: relative;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        border-radius: 22px;
+        background: rgba(10, 13, 20, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(145deg, rgba(141, 211, 255, 0.28), rgba(124, 143, 255, 0.18));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-soft);
+        font-weight: 900;
+        color: #eff8ff;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-copy strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.1;
+        letter-spacing: 0.01em;
+      }
+
+      .brand-copy span {
+        display: block;
+        margin-top: 3px;
+        color: rgba(244, 247, 251, 0.58);
+        font-size: 12px;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .chip,
+      .button {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 11px 16px;
+        font-weight: 600;
+        font-size: 13px;
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(12px);
+      }
+
+      .button {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.22);
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, #8dd3ff, #7c8fff 48%, #ffd37b);
+        color: #07101b;
+        border-color: transparent;
+      }
+
+      .button.small {
+        padding: 9px 12px;
+        font-size: 12px;
+        box-shadow: none;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(145deg, rgba(20, 25, 34, 0.94), rgba(12, 15, 22, 0.9)),
+          radial-gradient(circle at 75% 18%, rgba(141, 211, 255, 0.16), transparent 24%),
+          radial-gradient(circle at 88% 42%, rgba(124, 143, 255, 0.16), transparent 22%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow);
+        padding: 34px 34px 28px;
+        margin-bottom: 18px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -60px -80px auto;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(141, 211, 255, 0.18), transparent 68%);
+        filter: blur(8px);
+        pointer-events: none;
+      }
+
+      .hero-copy {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 380px;
+      }
+
+      .hero-visual {
+        position: relative;
+        z-index: 1;
+        min-height: 380px;
+        border-radius: 24px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+          radial-gradient(circle at 24% 24%, rgba(141, 211, 255, 0.16), transparent 28%),
+          radial-gradient(circle at 74% 24%, rgba(124, 143, 255, 0.16), transparent 28%),
+          radial-gradient(circle at 45% 78%, rgba(255, 211, 123, 0.12), transparent 34%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .hero-visual::before,
+      .hero-visual::after {
+        content: "";
+        position: absolute;
+        inset: auto;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .hero-visual::before {
+        width: 220px;
+        height: 220px;
+        right: -44px;
+        top: -24px;
+        background: radial-gradient(circle, rgba(141, 211, 255, 0.16), transparent 68%);
+      }
+
+      .hero-visual::after {
+        width: 260px;
+        height: 260px;
+        left: -84px;
+        bottom: -100px;
+        background: radial-gradient(circle, rgba(255, 211, 123, 0.14), transparent 70%);
+      }
+
+      .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(244, 247, 251, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .hero-kicker::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(180deg, #af8a3c, #537e6d);
+        box-shadow: 0 0 0 4px rgba(175, 138, 60, 0.12);
+      }
+
+      .hero h1 {
+        margin: 16px 0 10px;
+        font-family: var(--font-serif);
+        font-size: clamp(38px, 5vw, 72px);
+        line-height: 0.98;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 760px;
+        font-size: 15px;
+        line-height: 1.8;
+        color: rgba(244, 247, 251, 0.72);
+      }
+
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .stat {
+        min-width: 140px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: rgba(244, 247, 251, 0.58);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 358px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .panel {
+        border-radius: var(--radius-xl);
+        background: var(--panel);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 20px 0;
+      }
+
+      .panel-title {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
+
+      .panel-subtitle {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .upload-panel {
+        overflow: hidden;
+      }
+
+      .upload-area {
+        margin: 16px 16px 12px;
+        min-height: 188px;
+        border-radius: 22px;
+        border: 1.5px dashed rgba(89, 78, 63, 0.22);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 241, 233, 0.7)),
+          repeating-linear-gradient(
+            135deg,
+            rgba(159, 125, 44, 0.03) 0 14px,
+            rgba(47, 109, 93, 0.025) 14px 28px
+          );
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .upload-area.dragover {
+        border-color: rgba(47, 109, 93, 0.55);
+        box-shadow: 0 0 0 6px rgba(47, 109, 93, 0.08) inset;
+      }
+
+      .upload-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 14px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(232, 227, 218, 0.84));
+        color: var(--accent);
+        font-size: 24px;
+        box-shadow: 0 12px 20px rgba(59, 48, 31, 0.1);
+      }
+
+      .upload-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0;
+      }
+
+      .upload-hint {
+        color: var(--muted);
+        margin: 10px 0 0;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .upload-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 8px 16px 16px;
+        flex-wrap: wrap;
+      }
+
+      .thumbnail-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 0 16px 16px;
+      }
+
+      .thumb {
+        aspect-ratio: 1;
+        border-radius: 14px;
+        border: 1px solid rgba(39, 34, 28, 0.11);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 239, 232, 0.85)),
+          radial-gradient(circle at 30% 20%, rgba(159, 125, 44, 0.16), transparent 42%);
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .thumb::before {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 10px;
+        border: 1px solid rgba(39, 34, 28, 0.07);
+      }
+
+      .thumb-label {
+        position: absolute;
+        left: 8px;
+        top: 7px;
+        font-size: 11px;
+        font-weight: 800;
+        color: rgba(35, 31, 26, 0.58);
+      }
+
+      .thumb svg,
+      .result-card svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .thumb.uploaded {
+        background: #f8f5ef;
+      }
+
+      .thumb.empty {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 239, 232, 0.84)),
+          repeating-linear-gradient(
+            135deg,
+            rgba(35, 31, 26, 0.04) 0 8px,
+            transparent 8px 16px
+          );
+      }
+
+      .thumb.empty span {
+        font-size: 12px;
+        color: rgba(35, 31, 26, 0.44);
+        font-weight: 700;
+      }
+
+      .workflow {
+        overflow: hidden;
+      }
+
+      .workflow-body {
+        padding: 18px 20px 20px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .step {
+        position: relative;
+        min-height: 124px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(247, 241, 233, 0.72));
+        border: 1px solid rgba(40, 34, 28, 0.11);
+        padding: 14px 14px 12px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      }
+
+      .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: -11px;
+        top: 50%;
+        width: 22px;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(85, 77, 63, 0.16), rgba(85, 77, 63, 0.45));
+      }
+
+      .step .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        border-radius: 10px;
+        background: rgba(57, 55, 49, 0.06);
+        color: rgba(35, 31, 26, 0.66);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .step h3 {
+        margin: 12px 0 6px;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .step p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .step.active {
+        border-color: rgba(159, 125, 44, 0.36);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 244, 237, 0.88)),
+          radial-gradient(circle at 50% 0%, rgba(159, 125, 44, 0.12), transparent 40%);
+        box-shadow: 0 18px 32px rgba(57, 48, 33, 0.08);
+      }
+
+      .progress-block {
+        margin-top: 18px;
+        padding: 0 4px;
+      }
+
+      .progress-caption {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .progress-bar {
+        margin-top: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(65, 59, 49, 0.08);
+        overflow: hidden;
+      }
+
+      .progress-bar > span {
+        display: block;
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #ba9a48, #8fa164 60%, #2f6d5d);
+        transition: width 0.35s ease;
+      }
+
+      .result-stage {
+        margin-top: 18px;
+        min-height: 360px;
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 239, 232, 0.56)),
+          radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 36%);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        position: relative;
+        overflow: hidden;
+        padding: 18px;
+      }
+
+      .result-stage::before {
+        content: "生成结果会显示在这里";
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        color: rgba(35, 31, 26, 0.42);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 14px;
+        min-height: 100%;
+      }
+
+      .result-card {
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(246, 240, 232, 0.72));
+        border: 1px solid rgba(40, 34, 28, 0.09);
+        position: relative;
+        overflow: hidden;
+        min-height: 320px;
+      }
+
+      .result-card.big {
+        padding: 18px;
+      }
+
+      .result-card.small {
+        padding: 18px;
+      }
+
+      .result-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .result-title strong {
+        font-size: 14px;
+      }
+
+      .result-title span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .canvas {
+        position: relative;
+        height: calc(100% - 36px);
+        border-radius: 18px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(247, 241, 233, 0.5)),
+          radial-gradient(circle at 20% 20%, rgba(159, 125, 44, 0.12), transparent 26%),
+          radial-gradient(circle at 76% 18%, rgba(47, 109, 93, 0.1), transparent 26%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(233, 228, 220, 0.64));
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        overflow: hidden;
+      }
+
+      .canvas::before {
+        content: "";
+        position: absolute;
+        inset: 20px;
+        border-radius: 14px;
+        border: 1px solid rgba(40, 34, 28, 0.07);
+        background:
+          linear-gradient(180deg, transparent 0 74%, rgba(47, 109, 93, 0.08) 100%),
+          linear-gradient(90deg, rgba(159, 125, 44, 0.06), transparent 34%, transparent 66%, rgba(47, 109, 93, 0.06));
+      }
+
+      .canvas-note {
+        position: absolute;
+        left: 24px;
+        top: 20px;
+        color: rgba(35, 31, 26, 0.5);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .output {
+        position: absolute;
+        inset: 60px 24px 24px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .output-item {
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: 0 10px 24px rgba(57, 48, 33, 0.06);
+        position: relative;
+        overflow: hidden;
+        min-height: 190px;
+      }
+
+      .output-item::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 14px;
+        top: 12px;
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(35, 31, 26, 0.56);
+      }
+
+      .output-item .frame {
+        position: absolute;
+        inset: 36px 12px 12px;
+        border-radius: 12px;
+        border: 1px dashed rgba(40, 34, 28, 0.12);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(238, 233, 226, 0.22));
+      }
+
+      .output-item .caption {
+        position: absolute;
+        left: 12px;
+        bottom: 10px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        color: rgba(35, 31, 26, 0.5);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .tips {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .archive {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 14px;
+      }
+
+      .archive-panel {
+        padding: 18px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.56);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(14px);
+      }
+
+      .archive-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .archive-title {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.01em;
+      }
+
+      .archive-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .history-toolbar,
+      .queue-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .history-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-item {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 14px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .history-item.active {
+        border-color: rgba(159, 125, 44, 0.35);
+        box-shadow: 0 14px 28px rgba(57, 48, 33, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .history-preview {
+        border-radius: 16px;
+        overflow: hidden;
+        min-height: 120px;
+        background: linear-gradient(135deg, rgba(159, 125, 44, 0.08), rgba(47, 109, 93, 0.08));
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        position: relative;
+      }
+
+      .history-preview img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .history-preview .preview-fallback {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 12px;
+        text-align: center;
+        font-size: 12px;
+        color: rgba(35, 31, 26, 0.58);
+        font-weight: 700;
+      }
+
+      .history-meta {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+
+      .history-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .history-name {
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .history-desc {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .history-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: rgba(35, 31, 26, 0.05);
+        color: rgba(35, 31, 26, 0.72);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .tag.success {
+        background: rgba(106, 143, 82, 0.12);
+        color: #55733d;
+      }
+
+      .tag.error {
+        background: rgba(155, 69, 48, 0.12);
+        color: #8e3f2c;
+      }
+
+      .history-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+      }
+
+      .queue-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .queue-item {
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+      }
+
+      .queue-item.current {
+        background: linear-gradient(135deg, rgba(47, 109, 93, 0.1), rgba(159, 125, 44, 0.1));
+        border-color: rgba(159, 125, 44, 0.22);
+      }
+
+      .queue-item-title {
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .queue-item-desc {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .queue-empty {
+        min-height: 240px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 20px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(242, 236, 227, 0.68));
+        border: 1px dashed rgba(40, 34, 28, 0.14);
+        color: var(--muted);
+        line-height: 1.8;
+        font-size: 13px;
+      }
+
+      .prompt-box {
+        padding: 16px;
+        margin-bottom: 14px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.56);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .prompt-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .prompt-title {
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      .prompt-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .prompt-textarea {
+        width: 100%;
+        min-height: 122px;
+        resize: vertical;
+        border-radius: 16px;
+        border: 1px solid rgba(40, 34, 28, 0.12);
+        background: rgba(255, 255, 255, 0.74);
+        padding: 14px 14px 12px;
+        color: var(--text);
+        font: inherit;
+        line-height: 1.65;
+        outline: none;
+      }
+
+      .prompt-textarea:focus,
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: rgba(159, 125, 44, 0.58);
+        box-shadow: 0 0 0 4px rgba(159, 125, 44, 0.12);
+      }
+
+      .prompt-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .meta-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .meta-card {
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+      }
+
+      .meta-card.accent {
+        background: linear-gradient(135deg, rgba(47, 109, 93, 0.12), rgba(159, 125, 44, 0.12));
+      }
+
+      .meta-label {
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(35, 31, 26, 0.58);
+      }
+
+      .meta-value {
+        margin-top: 8px;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.55;
+      }
+
+      .gallery-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .gallery-card {
+        min-height: 160px;
+        border-radius: 18px;
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(242, 236, 227, 0.7));
+        overflow: hidden;
+        position: relative;
+      }
+
+      .gallery-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .gallery-card .overlay {
+        position: absolute;
+        inset: auto 10px 10px 10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(35, 31, 26, 0.72);
+      }
+
+      .gallery-card.empty {
+        display: grid;
+        place-items: center;
+        color: rgba(35, 31, 26, 0.42);
+        font-size: 12px;
+        font-weight: 700;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(242, 236, 227, 0.66)),
+          repeating-linear-gradient(135deg, rgba(35, 31, 26, 0.04) 0 10px, transparent 10px 20px);
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(18, 14, 10, 0.44);
+        backdrop-filter: blur(6px);
+        z-index: 999;
+      }
+
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal {
+        width: min(1160px, 100%);
+        max-height: calc(100vh - 36px);
+        overflow: auto;
+        border-radius: 28px;
+        background: rgba(252, 249, 244, 0.98);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: 0 28px 80px rgba(19, 14, 9, 0.28);
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 22px 22px 0;
+      }
+
+      .modal-title {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+      }
+
+      .modal-desc {
+        margin-top: 6px;
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 13px;
+      }
+
+      .modal-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 16px;
+        padding: 18px 22px 22px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(35, 31, 26, 0.72);
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(40, 34, 28, 0.12);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 12px 14px;
+        color: var(--text);
+        font: inherit;
+        outline: none;
+      }
+
+      .field textarea {
+        min-height: 112px;
+        resize: vertical;
+        line-height: 1.65;
+      }
+
+      .field-help {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        padding: 0 22px 22px;
+      }
+
+      .codebox {
+        border-radius: 20px;
+        background: #15120f;
+        color: #f7efe2;
+        padding: 16px;
+        white-space: pre-wrap;
+        line-height: 1.7;
+        font-size: 12px;
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 1001;
+        max-width: min(420px, calc(100vw - 36px));
+        border-radius: 16px;
+        background: rgba(28, 24, 19, 0.96);
+        color: #fff7ea;
+        padding: 12px 14px;
+        box-shadow: 0 18px 32px rgba(19, 14, 9, 0.24);
+        opacity: 0;
+        transform: translateY(12px);
+        pointer-events: none;
+        transition: opacity 0.22s ease, transform 0.22s ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .toast strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+
+      .toast span {
+        display: block;
+        font-size: 12px;
+        color: rgba(255, 247, 232, 0.78);
+        line-height: 1.6;
+      }
+
+      .tip-card {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.56);
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .tip-card strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 8px;
+      }
+
+      .tip-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(35, 31, 26, 0.62);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6a8f52;
+        box-shadow: 0 0 0 4px rgba(106, 143, 82, 0.12);
+      }
+
+      .hidden-input {
+        display: none;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .pulse {
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-2px);
+        }
+      }
+
+      .reveal {
+        animation: reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+          filter: blur(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .steps {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .steps .step::after {
+          display: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .shell {
+          width: min(100vw - 18px, 100vw);
+          margin-top: 9px;
+          margin-bottom: 18px;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero {
+          padding: 22px 18px 20px;
+        }
+
+        .hero h1 {
+          font-size: 38px;
+        }
+
+        .panel-header,
+        .workflow-body {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .upload-area,
+        .thumbnail-grid {
+          margin-left: 12px;
+          margin-right: 12px;
+        }
+
+        .thumbnail-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .steps {
+          grid-template-columns: 1fr;
+        }
+
+        .result-grid,
+        .tips {
+          grid-template-columns: 1fr;
+        }
+
+        .archive {
+          grid-template-columns: 1fr;
+        }
+
+        .modal-grid,
+        .gallery-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .output {
+          inset: 60px 14px 14px;
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .light-theme-override {
+        /* light version restored */
+      }
+
+      body {
+        background:
+          radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.72), transparent 22%),
+          radial-gradient(circle at 86% 24%, rgba(159, 125, 44, 0.12), transparent 20%),
+          radial-gradient(circle at 48% 100%, rgba(47, 109, 93, 0.1), transparent 28%),
+          linear-gradient(180deg, #f6f2ec 0%, #ece8e1 40%, #e9e1d7 100%) !important;
+        color: #231f1a !important;
+      }
+
+      body::before {
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) !important;
+        opacity: 0.35 !important;
+      }
+
+      .topbar {
+        background: rgba(255, 255, 255, 0.62) !important;
+        border: 1px solid rgba(39, 34, 28, 0.12) !important;
+      }
+
+      .brand-mark {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(229, 222, 213, 0.86)) !important;
+        color: #344a58 !important;
+        border: 1px solid rgba(43, 37, 31, 0.1) !important;
+      }
+
+      .brand-copy span,
+      .panel-subtitle,
+      .upload-hint,
+      .step p,
+      .progress-caption,
+      .result-title span,
+      .tip-card p,
+      .archive-subtitle,
+      .history-desc,
+      .queue-item-desc,
+      .modal-desc,
+      .field-help,
+      .prompt-subtitle,
+      .prompt-foot,
+      .gallery-card.empty,
+      .history-preview .preview-fallback,
+      .canvas-note,
+      .result-stage::before {
+        color: rgba(35, 31, 26, 0.62) !important;
+      }
+
+      .chip,
+      .button {
+        border: 1px solid rgba(39, 34, 28, 0.12) !important;
+        background: rgba(255, 255, 255, 0.62) !important;
+        color: #231f1a !important;
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, #1c2730, #294441 65%, #8d6b20) !important;
+        color: #fff7e8 !important;
+      }
+
+      .hero {
+        display: block !important;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.46)),
+          radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.9), transparent 24%),
+          radial-gradient(circle at 88% 42%, rgba(47, 109, 93, 0.09), transparent 24%) !important;
+        border: 1px solid rgba(41, 33, 24, 0.08) !important;
+      }
+
+      .hero::after {
+        background: radial-gradient(circle, rgba(159, 125, 44, 0.22), transparent 68%) !important;
+      }
+
+      .hero-kicker {
+        background: rgba(255, 255, 255, 0.72) !important;
+        color: rgba(35, 31, 26, 0.72) !important;
+        border: 1px solid rgba(39, 34, 28, 0.08) !important;
+      }
+
+      .hero h1 {
+        color: #231f1a !important;
+      }
+
+      .hero p {
+        color: rgba(35, 31, 26, 0.72) !important;
+      }
+
+      .stat {
+        background: rgba(255, 255, 255, 0.58) !important;
+        border: 1px solid rgba(41, 33, 24, 0.08) !important;
+      }
+
+      .stat span {
+        color: rgba(35, 31, 26, 0.62) !important;
+      }
+
+      .workspace,
+      .archive {
+        display: grid !important;
+      }
+
+      .panel,
+      .archive-panel,
+      .tip-card,
+      .prompt-box,
+      .meta-card,
+      .queue-item,
+      .history-item,
+      .result-stage,
+      .result-card,
+      .output-item,
+      .upload-area,
+      .step,
+      .gallery-card,
+      .modal {
+        background: rgba(255, 255, 255, 0.56) !important;
+        border: 1px solid rgba(40, 34, 28, 0.08) !important;
+        color: #231f1a !important;
+      }
+
+      .upload-area {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 241, 233, 0.7)),
+          repeating-linear-gradient(
+            135deg,
+            rgba(159, 125, 44, 0.03) 0 14px,
+            rgba(47, 109, 93, 0.025) 14px 28px
+          ) !important;
+        border: 1.5px dashed rgba(89, 78, 63, 0.22) !important;
+      }
+
+      .upload-icon {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(232, 227, 218, 0.84)) !important;
+        color: var(--accent) !important;
+      }
+
+      .thumb,
+      .step,
+      .result-card,
+      .output-item,
+      .history-preview,
+      .queue-item,
+      .gallery-card {
+        border-color: rgba(40, 34, 28, 0.08) !important;
+      }
+
+      .thumb {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 239, 232, 0.85)),
+          radial-gradient(circle at 30% 20%, rgba(159, 125, 44, 0.16), transparent 42%) !important;
+      }
+
+      .thumb.uploaded {
+        background: #f8f5ef !important;
+      }
+
+      .thumb.empty {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 239, 232, 0.84)),
+          repeating-linear-gradient(
+            135deg,
+            rgba(35, 31, 26, 0.04) 0 8px,
+            transparent 8px 16px
+          ) !important;
+      }
+
+      .thumb-label,
+      .canvas-note,
+      .result-stage::before,
+      .output-item::before,
+      .history-preview .preview-fallback {
+        color: rgba(35, 31, 26, 0.58) !important;
+      }
+
+      .step {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(247, 241, 233, 0.72)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+      }
+
+      .step p,
+      .progress-caption,
+      .result-title span,
+      .archive-subtitle,
+      .history-desc,
+      .queue-item-desc,
+      .modal-desc,
+      .field-help,
+      .prompt-subtitle,
+      .prompt-foot,
+      .tip-card p,
+      .gallery-card.empty {
+        color: rgba(35, 31, 26, 0.62) !important;
+      }
+
+      .step.active {
+        border-color: rgba(159, 125, 44, 0.36) !important;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 244, 237, 0.88)),
+          radial-gradient(circle at 50% 0%, rgba(159, 125, 44, 0.12), transparent 40%) !important;
+      }
+
+      .progress-bar {
+        background: rgba(65, 59, 49, 0.08) !important;
+      }
+
+      .progress-bar > span {
+        background: linear-gradient(90deg, #ba9a48, #8fa164 60%, #2f6d5d) !important;
+      }
+
+      .result-stage {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 239, 232, 0.56)),
+          radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 36%) !important;
+      }
+
+      .result-card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(246, 240, 232, 0.72)) !important;
+      }
+
+      .canvas {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(247, 241, 233, 0.5)),
+          radial-gradient(circle at 20% 20%, rgba(159, 125, 44, 0.12), transparent 26%),
+          radial-gradient(circle at 76% 18%, rgba(47, 109, 93, 0.1), transparent 26%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(233, 228, 220, 0.64)) !important;
+        border: 1px solid rgba(40, 34, 28, 0.08) !important;
+      }
+
+      .output-item {
+        background: rgba(255, 255, 255, 0.76) !important;
+      }
+
+      .output-item .frame {
+        border: 1px dashed rgba(40, 34, 28, 0.12) !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(238, 233, 226, 0.22)) !important;
+      }
+
+      .archive-panel,
+      .tip-card,
+      .prompt-box,
+      .meta-card,
+      .queue-item,
+      .history-item {
+        background: rgba(255, 255, 255, 0.56) !important;
+      }
+
+      .history-preview {
+        background: linear-gradient(135deg, rgba(159, 125, 44, 0.08), rgba(47, 109, 93, 0.08)) !important;
+      }
+
+      .queue-item.current {
+        background: linear-gradient(135deg, rgba(47, 109, 93, 0.1), rgba(159, 125, 44, 0.1)) !important;
+        border-color: rgba(159, 125, 44, 0.22) !important;
+      }
+
+      .tag {
+        background: rgba(35, 31, 26, 0.05) !important;
+        color: rgba(35, 31, 26, 0.72) !important;
+      }
+
+      .tag.success {
+        background: rgba(106, 143, 82, 0.12) !important;
+        color: #55733d !important;
+      }
+
+      .tag.error {
+        background: rgba(155, 69, 48, 0.12) !important;
+        color: #8e3f2c !important;
+      }
+
+      .modal-backdrop {
+        background: rgba(18, 14, 10, 0.44) !important;
+      }
+
+      .modal {
+        background: rgba(252, 249, 244, 0.98) !important;
+      }
+
+      .field label {
+        color: rgba(35, 31, 26, 0.72) !important;
+      }
+
+      .field input,
+      .field select,
+      .field textarea,
+      .prompt-textarea {
+        background: rgba(255, 255, 255, 0.8) !important;
+        border-color: rgba(40, 34, 28, 0.12) !important;
+        color: #231f1a !important;
+      }
+
+      .codebox {
+        background: #15120f !important;
+        color: #f7efe2 !important;
+      }
+
+      .toast {
+        background: rgba(28, 24, 19, 0.96) !important;
+        color: #fff7ea !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar reveal">
+        <div class="brand">
+          <div class="brand-mark">HD</div>
+          <div class="brand-copy">
+            <strong>中涛 AI</strong>
+            <span>电商详情页工坊</span>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="chip" id="apiPill">API 未配置</div>
+          <button class="button" id="manageBtn" type="button">管理</button>
+          <button class="button" id="resetBtn" type="button">重置</button>
+        </div>
+      </header>
+
+      <section class="hero reveal" style="animation-delay: 0.05s">
+        <div class="hero-kicker">上传商品图，一键生成详情页主图</div>
+        <h1>上传产品图，自动生成详情页主图</h1>
+        <p>
+          只保留必要操作：上传图片、开始生成、查看结果。我们把商品识别、卖点提炼、版式排布和主图输出压缩成一个流畅的工作台，
+          让你像在参考图里那样快速完成整套详情页制作。
+        </p>
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>4 步</strong>
+            <span>传图到出图，状态清晰</span>
+          </div>
+          <div class="stat">
+            <strong>10 张</strong>
+            <span>支持多图识别与筛选</span>
+          </div>
+          <div class="stat">
+            <strong>100%</strong>
+            <span>生成过程可视化展示</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace" id="workspaceSection">
+        <aside class="panel upload-panel reveal" style="animation-delay: 0.1s">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">产品图片</div>
+              <div class="panel-subtitle">支持多选，建议包含正面、细节、包装</div>
+            </div>
+            <span class="status">实时预览</span>
+          </div>
+
+          <label class="upload-area" id="dropzone" for="fileInput">
+            <div>
+              <div class="upload-icon pulse">↑</div>
+              <div class="upload-title">上传产品图</div>
+              <p class="upload-hint">支持拖拽 / 多选 / 直接粘贴。上传后会自动进入右侧生成流程。</p>
+            </div>
+          </label>
+
+          <input
+            class="hidden-input"
+            id="fileInput"
+            type="file"
+            accept="image/*"
+            multiple
+          />
+
+          <div class="upload-actions">
+            <button class="button primary" id="startBtn" type="button">开始生成</button>
+            <button class="button" id="clearBtn" type="button">清空素材</button>
+          </div>
+
+          <div class="thumbnail-grid" id="thumbGrid" aria-live="polite"></div>
+        </aside>
+
+        <section class="panel workflow reveal" style="animation-delay: 0.14s">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">生成流程</div>
+              <div class="panel-subtitle">从识别到出图的状态，会像参考图一样实时显示</div>
+            </div>
+            <span class="chip" id="flowState">等待上传</span>
+          </div>
+
+          <div class="workflow-body">
+            <div class="prompt-box">
+              <div class="prompt-head">
+                <div>
+                  <div class="prompt-title">生成要求</div>
+                  <div class="prompt-subtitle">修改后会直接用于真实接口请求</div>
+                </div>
+                <button class="button small" id="savePromptBtn" type="button">保存要求</button>
+              </div>
+              <textarea
+                id="promptInput"
+                class="prompt-textarea"
+                spellcheck="false"
+              >你是专业电商视觉设计师。请基于上传的产品参考图，生成{{count}}张天猫详情页主图。要求：画面干净、主体突出、统一品牌视觉、适合淘宝/天猫详情页首屏。请结合上传图片中的产品特点，输出高质感、可直接用于商品页的商业图。</textarea>
+              <div class="prompt-foot">
+                <span>支持变量：{{count}} {{file_count}} {{file_names}}</span>
+                <span id="promptStatus">本地未保存</span>
+              </div>
+            </div>
+
+            <div class="steps" id="stepGrid">
+              <div class="step active" data-step="0">
+                <div class="num">01</div>
+                <h3>传图</h3>
+                <p>已读取 0 张产品参考图</p>
+              </div>
+              <div class="step" data-step="1">
+                <div class="num">02</div>
+                <h3>识别执行</h3>
+                <p>提炼材质、功能、卖点关键词</p>
+              </div>
+              <div class="step" data-step="2">
+                <div class="num">03</div>
+                <h3>生成提示词</h3>
+                <p>逐张生成电商图描述与版式</p>
+              </div>
+              <div class="step" data-step="3">
+                <div class="num">04</div>
+                <h3>逐张出图</h3>
+                <p>同步输出 10 张可用的详情页主图</p>
+              </div>
+            </div>
+
+            <div class="progress-block">
+              <div class="progress-caption">
+                <span id="progressLabel">逐张生图中 (0/10)...</span>
+                <span id="progressPct">0%</span>
+              </div>
+              <div class="progress-bar" aria-label="生成进度">
+                <span id="progressFill"></span>
+              </div>
+            </div>
+
+            <div class="result-stage">
+              <div class="result-grid">
+                <div class="result-card big">
+                  <div class="result-title">
+                    <strong>主视觉输出</strong>
+                    <span>适合商品详情页首屏</span>
+                  </div>
+                  <div class="canvas">
+                    <div class="canvas-note">生成结果展示区</div>
+                    <div class="output" id="resultGrid">
+                      <div class="output-item" data-label="封面主图">
+                        <div class="frame"></div>
+                        <div class="caption"><span>卖点图 / 主标题</span><span>960 × 960</span></div>
+                      </div>
+                      <div class="output-item" data-label="细节特写">
+                        <div class="frame"></div>
+                        <div class="caption"><span>材质 / 结构 / 纹理</span><span>960 × 960</span></div>
+                      </div>
+                      <div class="output-item" data-label="场景图">
+                        <div class="frame"></div>
+                        <div class="caption"><span>生活方式 / 使用场景</span><span>960 × 960</span></div>
+                      </div>
+                      <div class="output-item" data-label="对比图">
+                        <div class="frame"></div>
+                        <div class="caption"><span>规格对照 / 参数说明</span><span>960 × 960</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="result-card small">
+                  <div class="result-title">
+                    <strong>接口状态</strong>
+                    <span>可用于历史记录或复用</span>
+                  </div>
+                  <div class="meta-stack">
+                    <div class="meta-card">
+                      <div class="meta-label">当前接口</div>
+                      <div class="meta-value" id="apiSummary">未配置，先在“管理”里填入接口</div>
+                    </div>
+                    <div class="meta-card">
+                      <div class="meta-label">当前提示词</div>
+                      <div class="meta-value" id="promptSummary">可直接改左侧要求，保存后会用于生成</div>
+                    </div>
+                    <div class="meta-card accent">
+                      <div class="meta-label">执行状态</div>
+                      <div class="meta-value" id="runtimeSummary">等待上传产品图</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="tips reveal" style="animation-delay: 0.2s">
+        <article class="tip-card">
+          <strong>适合什么场景</strong>
+          <p>新品上架、爆款重做、活动页补图、类目详情页统一风格。你可以把它当作一个 AI 电商视觉工坊。</p>
+        </article>
+        <article class="tip-card">
+          <strong>为什么像参考图</strong>
+          <p>我们保留了“上传左栏 + 流程右栏 + 生成结果底部展示”的布局逻辑，同时把细节做得更像真正可用的产品后台。</p>
+        </article>
+        <article class="tip-card">
+          <strong>下一步可继续做</strong>
+          <p>如果你要，我可以继续把它扩成带登录、历史记录、模板库、生成队列和真实图片预览的完整版后台。</p>
+        </article>
+      </section>
+
+      <section class="archive reveal" id="archiveSection" style="animation-delay: 0.24s">
+        <div class="archive-panel">
+          <div class="archive-head">
+            <div>
+              <div class="archive-title">历史记录</div>
+              <div class="archive-subtitle">记录每次生成的提示词、接口状态和输出结果，方便复用或回看。</div>
+            </div>
+            <div class="history-toolbar">
+              <div class="chip" id="historyCount">0 条记录</div>
+              <button class="button small" id="clearHistoryBtn" type="button">清空历史</button>
+            </div>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div class="archive-panel">
+          <div class="archive-head">
+            <div>
+              <div class="archive-title">当前队列</div>
+              <div class="archive-subtitle">展示当前任务的流程状态和最近一次生成的执行信息。</div>
+            </div>
+            <div class="queue-toolbar">
+              <span class="chip" id="queueState">空闲</span>
+            </div>
+          </div>
+          <div class="queue-list" id="queueList"></div>
+        </div>
+      </section>
+
+      <div class="modal-backdrop" id="configModal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="configTitle">
+          <div class="modal-header">
+            <div>
+              <div class="modal-title" id="configTitle">API 接口配置</div>
+              <div class="modal-desc">
+                这里可以填写真实图片生成接口。推荐使用你自己的工作流接口，接收上传图片和提示词后返回生成结果。
+              </div>
+            </div>
+            <button class="button small" id="closeConfigBtn" type="button">关闭</button>
+          </div>
+
+          <div class="modal-grid">
+            <div>
+              <div class="field">
+                <label for="providerMode">接口模式</label>
+                <select id="providerMode">
+                  <option value="custom-json">自定义 JSON 工作流接口</option>
+                  <option value="openai-images">OpenAI Images 兼容接口</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="apiBaseUrl">API Base URL</label>
+                <input id="apiBaseUrl" type="url" placeholder="https://your-domain.com/api" />
+              </div>
+              <div class="field">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="如果接口需要鉴权，请填写" />
+              </div>
+              <div class="field">
+                <label for="customEndpoint">自定义接口路径</label>
+                <input id="customEndpoint" type="text" placeholder="/generate/product-images" />
+              </div>
+              <div class="field">
+                <label for="modelName">模型 / 工作流名称</label>
+                <input id="modelName" type="text" placeholder="gpt-image-1 / custom-workflow" />
+              </div>
+              <div class="field">
+                <label for="sizeValue">生成尺寸</label>
+                <input id="sizeValue" type="text" placeholder="1024x1024" />
+              </div>
+              <div class="field">
+                <label for="outputCount">输出张数</label>
+                <input id="outputCount" type="number" min="1" max="12" step="1" />
+              </div>
+            </div>
+
+            <div>
+              <div class="field">
+                <label for="modalPrompt">提示词模板</label>
+                <textarea id="modalPrompt"></textarea>
+                <div class="field-help">
+                  支持变量：<code>{{count}}</code> <code>{{file_count}}</code> <code>{{file_names}}</code>。
+                  如果你的接口支持图片输入，页面会自动把上传文件转成 data URL 传给接口。
+                </div>
+              </div>
+              <div class="field">
+                <label>请求示例</label>
+                <div class="codebox" id="payloadPreview"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="button" id="testConfigBtn" type="button">测试配置</button>
+            <button class="button" id="restoreDefaultBtn" type="button">恢复默认</button>
+            <button class="button primary" id="saveConfigBtn" type="button">保存配置</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </main>
+
+    <script>
+      const STORAGE_KEY = "zhongtao-ai-config-v1";
+      const HISTORY_KEY = "zhongtao-ai-history-v1";
+      const DEFAULT_PROMPT =
+        "你是专业电商视觉设计师。请基于上传的产品参考图，生成{{count}}张天猫详情页主图。要求：画面干净、主体突出、统一品牌视觉、适合淘宝/天猫详情页首屏。请结合上传图片中的产品特点，输出高质感、可直接用于商品页的商业图。";
+
+      const RESULT_LABELS = [
+        { label: "封面主图", caption: "主标题 + 卖点大字报" },
+        { label: "细节特写", caption: "材质 / 结构 / 工艺" },
+        { label: "场景图", caption: "通勤 / 逛街 / 外出" },
+        { label: "对比图", caption: "尺码 / 颜色 / 规格" },
+      ];
+
+      const defaultConfig = {
+        mode: "custom-json",
+        apiBaseUrl: "",
+        apiKey: "",
+        customEndpoint: "/generate/product-images",
+        modelName: "gpt-image-1",
+        sizeValue: "1024x1024",
+        outputCount: 4,
+        promptTemplate: DEFAULT_PROMPT,
+      };
+
+      const fileInput = document.getElementById("fileInput");
+      const dropzone = document.getElementById("dropzone");
+      const thumbGrid = document.getElementById("thumbGrid");
+      const startBtn = document.getElementById("startBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const flowState = document.getElementById("flowState");
+      const progressFill = document.getElementById("progressFill");
+      const progressLabel = document.getElementById("progressLabel");
+      const progressPct = document.getElementById("progressPct");
+      const stepNodes = [...document.querySelectorAll(".step")];
+      const resultGrid = document.getElementById("resultGrid");
+      const manageBtn = document.getElementById("manageBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+      const heroStartBtn = document.getElementById("heroStartBtn");
+      const heroManageBtn = document.getElementById("heroManageBtn");
+      const heroHistoryBtn = document.getElementById("heroHistoryBtn");
+      const apiPill = document.getElementById("apiPill");
+      const apiSummary = document.getElementById("apiSummary");
+      const promptSummary = document.getElementById("promptSummary");
+      const runtimeSummary = document.getElementById("runtimeSummary");
+      const promptInput = document.getElementById("promptInput");
+      const savePromptBtn = document.getElementById("savePromptBtn");
+      const promptStatus = document.getElementById("promptStatus");
+      const configModal = document.getElementById("configModal");
+      const closeConfigBtn = document.getElementById("closeConfigBtn");
+      const saveConfigBtn = document.getElementById("saveConfigBtn");
+      const testConfigBtn = document.getElementById("testConfigBtn");
+      const restoreDefaultBtn = document.getElementById("restoreDefaultBtn");
+      const apiBaseUrlInput = document.getElementById("apiBaseUrl");
+      const apiKeyInput = document.getElementById("apiKey");
+      const customEndpointInput = document.getElementById("customEndpoint");
+      const providerModeInput = document.getElementById("providerMode");
+      const modelNameInput = document.getElementById("modelName");
+      const sizeValueInput = document.getElementById("sizeValue");
+      const outputCountInput = document.getElementById("outputCount");
+      const modalPromptInput = document.getElementById("modalPrompt");
+      const payloadPreview = document.getElementById("payloadPreview");
+      const historyList = document.getElementById("historyList");
+      const toast = document.getElementById("toast");
+
+      const state = {
+        files: [],
+        fileUrls: [],
+        generatedUrls: [],
+        history: loadHistory(),
+        selectedHistoryId: null,
+        timer: null,
+        progress: 0,
+        activeStep: 0,
+        running: false,
+        config: loadConfig(),
+      };
+
+      const sampleSvgs = [
+        makeProductSvg("#181717", "#5a5150", "鞋型 01"),
+        makeProductSvg("#202124", "#74706f", "鞋型 02"),
+        makeProductSvg("#141516", "#494643", "鞋型 03"),
+        makeProductSvg("#24292d", "#6f777c", "鞋型 04"),
+        makeProductSvg("#2a2625", "#7d7368", "鞋型 05"),
+        makeProductSvg("#1c1c1d", "#655b51", "鞋型 06"),
+        makeProductSvg("#222226", "#707070", "鞋型 07"),
+        makeProductSvg("#1d1f22", "#5f5a57", "鞋型 08"),
+      ];
+
+      function loadConfig() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) return { ...defaultConfig };
+          return { ...defaultConfig, ...JSON.parse(stored) };
+        } catch {
+          return { ...defaultConfig };
+        }
+      }
+
+      function saveConfigToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.config));
+      }
+
+      function loadHistory() {
+        try {
+          const stored = localStorage.getItem(HISTORY_KEY);
+          if (!stored) return [];
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveHistoryToStorage() {
+        const payload = state.history.slice(0, 12);
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(payload));
+        } catch {
+          try {
+            const compact = payload.map((record) => ({
+              ...record,
+              outputs: (record.outputs || []).map((item) => ({
+                label: item.label,
+                caption: item.caption,
+                size: item.size,
+                url: String(item.url || "").slice(0, 8000),
+              })),
+            }));
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(compact));
+          } catch {
+            // Ignore quota failures for extremely large previews.
+          }
+        }
+      }
+
+      function cloneConfig(next) {
+        return {
+          ...defaultConfig,
+          ...next,
+        };
+      }
+
+      function escapeHTML(text) {
+        return String(text)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function escapeAttr(text) {
+        return escapeHTML(text).replaceAll("`", "&#96;");
+      }
+
+      function truncate(text, max = 80) {
+        const value = String(text || "").trim().replace(/\s+/g, " ");
+        if (value.length <= max) return value;
+        return `${value.slice(0, max - 1)}…`;
+      }
+
+      function showToast(title, message = "") {
+        toast.innerHTML = `<strong>${escapeHTML(title)}</strong><span>${escapeHTML(message)}</span>`;
+        toast.classList.add("show");
+        window.clearTimeout(showToast._timer);
+        showToast._timer = window.setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2800);
+      }
+
+      function formatDateTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "未知时间";
+        return new Intl.DateTimeFormat("zh-CN", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(date);
+      }
+
+      function summarizeEndpoint(config) {
+        const endpoint = buildEndpoint(config);
+        if (!endpoint) return "未配置";
+        try {
+          const url = new URL(endpoint);
+          return `${url.origin}${url.pathname}`;
+        } catch {
+          return endpoint;
+        }
+      }
+
+      function compressOutputsForHistory(outputs) {
+        return outputs.slice(0, 4).map((item) => ({
+          label: item.label,
+          caption: item.caption,
+          size: item.size,
+          url: String(item.url || "").slice(0, 120000),
+        }));
+      }
+
+      function pushHistoryRecord(record) {
+        const next = {
+          id: record.id || (window.crypto?.randomUUID ? crypto.randomUUID() : `record-${Date.now()}`),
+          createdAt: record.createdAt || Date.now(),
+          status: record.status || "completed",
+          source: record.source || "manual",
+          prompt: record.prompt || "",
+          endpoint: record.endpoint || "",
+          modelName: record.modelName || "",
+          sizeValue: record.sizeValue || "",
+          outputCount: Number(record.outputCount || 0),
+          fileCount: Number(record.fileCount || 0),
+          fileNames: Array.isArray(record.fileNames) ? record.fileNames.slice(0, 9) : [],
+          outputs: Array.isArray(record.outputs) ? compressOutputsForHistory(record.outputs) : [],
+          error: record.error || "",
+          config: {
+            mode: record.config?.mode || "custom-json",
+            apiBaseUrl: record.config?.apiBaseUrl || "",
+            customEndpoint: record.config?.customEndpoint || "",
+            modelName: record.config?.modelName || "",
+            sizeValue: record.config?.sizeValue || "",
+            outputCount: Number(record.config?.outputCount || 0),
+            promptTemplate: record.config?.promptTemplate || "",
+          },
+        };
+
+        state.history = [next, ...state.history.filter((item) => item.id !== next.id)].slice(0, 12);
+        state.selectedHistoryId = next.id;
+        saveHistoryToStorage();
+        renderHistory();
+        return next;
+      }
+
+      function removeHistoryRecord(id) {
+        state.history = state.history.filter((item) => item.id !== id);
+        if (state.selectedHistoryId === id) {
+          state.selectedHistoryId = state.history[0]?.id || null;
+        }
+        saveHistoryToStorage();
+        renderHistory();
+      }
+
+      function clearHistoryRecords() {
+        state.history = [];
+        state.selectedHistoryId = null;
+        saveHistoryToStorage();
+        renderHistory();
+        showToast("历史已清空", "本地记录已删除。");
+      }
+
+      function selectHistoryRecord(id) {
+        const record = state.history.find((item) => item.id === id);
+        if (!record) return;
+        state.selectedHistoryId = id;
+        renderHistory();
+
+        promptInput.value = record.prompt || state.config.promptTemplate;
+        modalPromptInput.value = promptInput.value;
+        state.config = cloneConfig({
+          ...state.config,
+          mode: record.config?.mode || state.config.mode,
+          apiBaseUrl: record.config?.apiBaseUrl || state.config.apiBaseUrl,
+          customEndpoint: record.config?.customEndpoint || state.config.customEndpoint,
+          modelName: record.config?.modelName || state.config.modelName,
+          sizeValue: record.config?.sizeValue || state.config.sizeValue,
+          outputCount: record.config?.outputCount || state.config.outputCount,
+          promptTemplate: promptInput.value || state.config.promptTemplate,
+        });
+        syncFieldsFromConfig();
+        if (record.status === "failed") {
+          renderErrorState(record.error || "历史记录中的请求失败");
+        } else {
+          renderGeneratedOutputs(record.outputs || [], "历史记录");
+        }
+        flowState.textContent = record.status === "failed" ? "请求失败" : "查看历史";
+        progressLabel.textContent = record.status === "failed" ? "失败记录" : "历史回放";
+        progressPct.textContent = record.status === "failed" ? "0%" : "100%";
+        setProgress(record.status === "failed" ? 0 : 100);
+        renderQueueList(record);
+        showToast("已回放历史记录", "当前结果已切换到你选中的那次生成。");
+      }
+
+      function reuseHistoryRecord(id) {
+        const record = state.history.find((item) => item.id === id);
+        if (!record) return;
+        promptInput.value = record.prompt || promptInput.value;
+        modalPromptInput.value = promptInput.value;
+        state.config = cloneConfig({
+          ...state.config,
+          mode: record.config?.mode || state.config.mode,
+          apiBaseUrl: record.config?.apiBaseUrl || state.config.apiBaseUrl,
+          customEndpoint: record.config?.customEndpoint || state.config.customEndpoint,
+          modelName: record.config?.modelName || state.config.modelName,
+          sizeValue: record.config?.sizeValue || state.config.sizeValue,
+          outputCount: record.config?.outputCount || state.config.outputCount,
+          promptTemplate: promptInput.value || state.config.promptTemplate,
+        });
+        syncFieldsFromConfig();
+        renderQueueList(record);
+        showToast("已复用历史配置", "你可以直接再次上传并生成。");
+      }
+
+      function buildHistoryPreview(record) {
+        const first = record.outputs?.[0]?.url || "";
+        if (first) {
+          return `<img src="${escapeAttr(first)}" alt="历史预览" />`;
+        }
+        return `<div class="preview-fallback">无预览图<br />${escapeHTML(record.status === "failed" ? "失败记录" : "文字记录")}</div>`;
+      }
+
+      function renderHistory() {
+        const historyCount = document.getElementById("historyCount");
+        const historyList = document.getElementById("historyList");
+        const queueState = document.getElementById("queueState");
+        if (!historyCount || !historyList || !queueState) return;
+
+        historyCount.textContent = `${state.history.length} 条记录`;
+        queueState.textContent = state.running ? "运行中" : state.selectedHistoryId ? "已选中记录" : "空闲";
+
+        if (!state.history.length) {
+          historyList.innerHTML = `
+            <div class="queue-empty">
+              还没有历史记录。<br />
+              上传一组商品图并开始生成后，这里会自动保存结果。
+            </div>
+          `;
+          renderQueueList(null);
+          return;
+        }
+
+        historyList.innerHTML = state.history
+          .map((record) => {
+            const active = record.id === state.selectedHistoryId ? "active" : "";
+            const statusTag =
+              record.status === "failed"
+                ? '<span class="tag error">失败</span>'
+                : '<span class="tag success">完成</span>';
+            const endpoint = summarizeEndpoint(record.config || {});
+            const preview = buildHistoryPreview(record);
+            const summary = `${record.fileCount || 0} 张素材 · ${record.outputCount || 0} 张结果 · ${escapeHTML(
+              record.modelName || "未命名模型"
+            )}`;
+            const fileNames = (record.fileNames || []).slice(0, 3).join("、") || "未记录文件名";
+            return `
+              <article class="history-item ${active}" data-id="${escapeAttr(record.id)}">
+                <div class="history-preview">${preview}</div>
+                <div class="history-meta">
+                  <div class="history-topline">
+                    <div class="history-name">${escapeHTML(formatDateTime(record.createdAt))}</div>
+                    <div class="history-tags">
+                      ${statusTag}
+                      <span class="tag">${escapeHTML(record.config?.mode === "openai-images" ? "OpenAI" : "自定义")}</span>
+                    </div>
+                  </div>
+                  <div class="history-desc">${escapeHTML(summary)}<br />${escapeHTML(fileNames)}<br />${escapeHTML(endpoint)}</div>
+                  <div class="history-actions">
+                    <button class="button small" data-action="view" data-id="${escapeAttr(record.id)}" type="button">查看</button>
+                    <button class="button small" data-action="reuse" data-id="${escapeAttr(record.id)}" type="button">复用</button>
+                    <button class="button small" data-action="delete" data-id="${escapeAttr(record.id)}" type="button">删除</button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        renderQueueList(getQueueRecord());
+      }
+
+      function renderQueueList(record) {
+        const queueList = document.getElementById("queueList");
+        const queueState = document.getElementById("queueState");
+        if (!queueList || !queueState) return;
+
+        const currentLabel = state.running ? "运行中" : record ? (record.status === "failed" ? "失败" : "空闲") : "空闲";
+        queueState.textContent = currentLabel;
+
+        const steps = [
+          {
+            title: "上传解析",
+            desc: state.files.length
+              ? `已载入 ${state.files.length} 张图片，准备转成接口输入。`
+              : "等待上传图片。",
+            current: state.running && state.activeStep === 0,
+          },
+          {
+            title: "提示词生成",
+            desc: promptInput.value ? `已编辑提示词：${truncate(promptInput.value, 64)}` : "等待提示词。",
+            current: state.running && state.activeStep === 1,
+          },
+          {
+            title: "接口调用",
+            desc: hasConfiguredEndpoint(state.config)
+              ? `接口：${summarizeEndpoint(state.config)}`
+              : "当前处于演示模式。",
+            current: state.running && state.activeStep === 2,
+          },
+          {
+            title: "结果归档",
+            desc: record
+              ? `${formatDateTime(record.createdAt)} · ${record.status === "failed" ? "失败记录" : "已完成"}`
+              : "等待新记录。",
+            current: state.running && state.activeStep === 3,
+          },
+        ];
+
+        queueList.innerHTML = steps
+          .map(
+            (step) => `
+            <div class="queue-item ${step.current ? "current" : ""}">
+              <div class="queue-item-title">${escapeHTML(step.title)}</div>
+              <div class="queue-item-desc">${escapeHTML(step.desc)}</div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      function getQueueRecord() {
+        if (state.running) return null;
+        return state.history.find((item) => item.id === state.selectedHistoryId) || state.history[0] || null;
+      }
+
+      function makeProductSvg(base, detail, label) {
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="${label}">
+            <defs>
+              <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0.12" />
+              </linearGradient>
+            </defs>
+            <rect width="180" height="180" rx="18" fill="transparent" />
+            <ellipse cx="98" cy="116" rx="54" ry="18" fill="rgba(0,0,0,0.12)" />
+            <path d="M38 105 C52 83, 69 68, 94 68 L130 68 C138 68, 145 72, 149 79 L155 89 C158 94, 156 101, 151 105 L140 113 C135 117, 128 120, 121 120 L57 120 C47 120, 39 115, 38 105 Z" fill="${base}" />
+            <path d="M47 98 C58 78, 77 65, 99 63 L126 62 C135 62, 143 66, 147 74 L152 83 C154 88, 152 94, 147 98 L131 108 C126 111, 121 113, 115 113 L58 113 C50 113, 45 107, 47 98 Z" fill="${detail}" />
+            <path d="M66 86 C75 81, 88 78, 101 79" stroke="url(#g)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+            <path d="M58 95 C72 91, 83 90, 108 91" stroke="rgba(255,255,255,0.16)" stroke-width="4" stroke-linecap="round" />
+            <path d="M119 79 L141 79" stroke="rgba(255,255,255,0.2)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M63 113 L58 136 C57 143, 63 147, 69 145 L120 137 C129 136, 138 130, 143 122 L147 115" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+            <rect x="24" y="20" width="56" height="18" rx="9" fill="rgba(255,255,255,0.14)" />
+            <text x="32" y="33" font-family="Arial, sans-serif" font-size="9" fill="rgba(255,255,255,0.8)" font-weight="700">${label}</text>
+          </svg>`;
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      }
+
+      function revokeFileUrls() {
+        state.fileUrls.forEach((url) => URL.revokeObjectURL(url));
+        state.fileUrls = [];
+      }
+
+      function revokeGeneratedUrls() {
+        state.generatedUrls.forEach((url) => {
+          if (String(url).startsWith("blob:")) URL.revokeObjectURL(url);
+        });
+        state.generatedUrls = [];
+      }
+
+      function normalizePrompt(prompt, context) {
+        return String(prompt || defaultConfig.promptTemplate)
+          .replaceAll("{{count}}", String(context.count))
+          .replaceAll("{{file_count}}", String(context.fileCount))
+          .replaceAll("{{file_names}}", context.fileNames || "未命名图片");
+      }
+
+      function buildEndpoint(config) {
+        const base = String(config.apiBaseUrl || "").trim();
+        const endpoint = String(config.customEndpoint || "").trim();
+        if (/^https?:\/\//i.test(endpoint)) return endpoint;
+        if (!base) return endpoint;
+        try {
+          const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+          const cleanedEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
+          return new URL(cleanedEndpoint, normalizedBase).toString();
+        } catch {
+          return endpoint || base;
+        }
+      }
+
+      function buildHeaders(config) {
+        const headers = {
+          "Content-Type": "application/json",
+        };
+        if (String(config.apiKey || "").trim()) {
+          headers.Authorization = `Bearer ${config.apiKey.trim()}`;
+          headers["X-API-Key"] = config.apiKey.trim();
+        }
+        return headers;
+      }
+
+      function syncFieldsFromConfig() {
+        providerModeInput.value = state.config.mode;
+        apiBaseUrlInput.value = state.config.apiBaseUrl;
+        apiKeyInput.value = state.config.apiKey;
+        customEndpointInput.value = state.config.customEndpoint;
+        modelNameInput.value = state.config.modelName;
+        sizeValueInput.value = state.config.sizeValue;
+        outputCountInput.value = state.config.outputCount;
+        modalPromptInput.value = state.config.promptTemplate;
+        promptInput.value = state.config.promptTemplate;
+        updateSummaryCards();
+        updatePayloadPreview();
+      }
+
+      function updateSummaryCards() {
+        const config = state.config;
+        const hasConfig = hasConfiguredEndpoint(config);
+        const modeLabel = config.mode === "openai-images" ? "OpenAI Images 兼容" : "自定义工作流";
+        apiPill.textContent = hasConfig ? `${modeLabel} · 已保存` : `${modeLabel} · 未配置`;
+        apiSummary.textContent = hasConfig
+          ? `${modeLabel} / ${buildEndpoint(config) || "接口待填写"} / ${config.modelName}`
+          : "未配置，先在“管理”里填入接口";
+        promptSummary.textContent = truncate(promptInput.value || config.promptTemplate, 72);
+        const fileCount = state.files.length;
+        runtimeSummary.textContent = state.running
+          ? `请求中 · 已上传 ${fileCount} 张产品图`
+          : fileCount
+            ? `已上传 ${fileCount} 张产品图 · 等待开始`
+            : "等待上传产品图";
+      }
+
+      function updatePromptStatus(message) {
+        promptStatus.textContent = message;
+      }
+
+      function updatePayloadPreview() {
+        const config = cloneConfig({
+          ...state.config,
+          promptTemplate: promptInput.value || modalPromptInput.value || state.config.promptTemplate,
+          outputCount: Number(outputCountInput.value || state.config.outputCount),
+        });
+        const endpoint = buildEndpoint(config);
+        const fileNames = state.files.slice(0, 4).map((file) => file.name);
+        const prompt = normalizePrompt(config.promptTemplate, {
+          count: config.outputCount,
+          fileCount: state.files.length,
+          fileNames: fileNames.join("、"),
+        });
+        const previewBody =
+          config.mode === "openai-images"
+            ? {
+                model: config.modelName,
+                prompt,
+                size: config.sizeValue,
+                n: config.outputCount,
+              }
+            : {
+                prompt,
+                count: config.outputCount,
+                size: config.sizeValue,
+                model: config.modelName,
+                images: fileNames.map((name, index) => ({
+                  name,
+                  mime: state.files[index]?.file?.type || "image/*",
+                  dataUrl: "data:image/...;base64,***",
+                })),
+              };
+        const preview = {
+          url: endpoint || "请填写 API 地址",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(String(config.apiKey || "").trim() ? { Authorization: "Bearer ***" } : {}),
+          },
+          body: previewBody,
+        };
+        payloadPreview.textContent = JSON.stringify(preview, null, 2);
+      }
+
+      function openConfigModal() {
+        syncFieldsFromConfig();
+        configModal.classList.add("open");
+        configModal.setAttribute("aria-hidden", "false");
+      }
+
+      function scrollToSection(selector) {
+        const target = document.querySelector(selector);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function closeConfigModal() {
+        configModal.classList.remove("open");
+        configModal.setAttribute("aria-hidden", "true");
+      }
+
+      function savePromptTemplate() {
+        state.config.promptTemplate = promptInput.value.trim() || defaultConfig.promptTemplate;
+        modalPromptInput.value = state.config.promptTemplate;
+        saveConfigToStorage();
+        updatePromptStatus("已保存到本地");
+        updateSummaryCards();
+        updatePayloadPreview();
+        showToast("提示词已保存", "生成时会优先使用当前编辑的提示词。");
+      }
+
+      function saveModalConfig() {
+        state.config = cloneConfig({
+          mode: providerModeInput.value,
+          apiBaseUrl: apiBaseUrlInput.value.trim(),
+          apiKey: apiKeyInput.value.trim(),
+          customEndpoint: customEndpointInput.value.trim(),
+          modelName: modelNameInput.value.trim() || defaultConfig.modelName,
+          sizeValue: sizeValueInput.value.trim() || defaultConfig.sizeValue,
+          outputCount: Math.max(1, Math.min(12, Number(outputCountInput.value || defaultConfig.outputCount))),
+          promptTemplate: modalPromptInput.value.trim() || defaultConfig.promptTemplate,
+        });
+        promptInput.value = state.config.promptTemplate;
+        saveConfigToStorage();
+        updateSummaryCards();
+        updatePayloadPreview();
+        closeConfigModal();
+        updatePromptStatus("已保存到本地");
+        showToast("配置已保存", "接口信息和提示词模板已写入本地存储。");
+      }
+
+      function restoreDefaults() {
+        state.config = cloneConfig(defaultConfig);
+        saveConfigToStorage();
+        syncFieldsFromConfig();
+        updatePromptStatus("已恢复默认");
+        showToast("已恢复默认配置", "接口字段和提示词模板都回到初始状态。");
+      }
+
+      function validateConfig(config = state.config) {
+        if (!hasConfiguredEndpoint(config)) {
+          throw new Error("请先在“管理”中填写 API Base URL 或完整接口地址。");
+        }
+        const endpoint = buildEndpoint(config);
+        try {
+          new URL(endpoint);
+        } catch {
+          throw new Error("接口地址格式不正确，请检查 API Base URL 和接口路径。");
+        }
+        return endpoint;
+      }
+
+      function setProgress(value) {
+        state.progress = Math.max(0, Math.min(100, value));
+        progressFill.style.width = `${state.progress}%`;
+        progressPct.textContent = `${Math.round(state.progress)}%`;
+      }
+
+      function setStep(stepIndex, detailText) {
+        state.activeStep = stepIndex;
+        stepNodes.forEach((node, index) => {
+          node.classList.toggle("active", index <= stepIndex);
+        });
+        if (detailText) {
+          const target = stepNodes[Math.max(0, Math.min(stepNodes.length - 1, stepIndex))].querySelector("p");
+          if (target) target.textContent = detailText;
+        }
+        const titles = ["等待上传", "识别素材", "生成提示词", "逐张出图"];
+        flowState.textContent = titles[Math.max(0, Math.min(titles.length - 1, stepIndex))];
+        renderQueueList(getQueueRecord());
+      }
+
+      function setBusy(isBusy) {
+        state.running = isBusy;
+        startBtn.disabled = isBusy;
+        startBtn.textContent = isBusy ? "生成中..." : "开始生成";
+        renderQueueList(getQueueRecord());
+      }
+
+      function renderThumbs() {
+        thumbGrid.innerHTML = "";
+        const list = state.files.length
+          ? state.files
+          : new Array(9).fill(null).map((_, index) => ({
+              placeholder: true,
+              index,
+            }));
+
+        list.slice(0, 9).forEach((item, index) => {
+          if (item.placeholder) {
+            const empty = document.createElement("div");
+            empty.className = "thumb empty";
+            empty.innerHTML = `<span>示例 ${index + 1}</span>`;
+            const img = document.createElement("img");
+            img.alt = `示例 ${index + 1}`;
+            img.src = sampleSvgs[index % sampleSvgs.length];
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            empty.appendChild(img);
+            thumbGrid.appendChild(empty);
+            return;
+          }
+
+          const div = document.createElement("div");
+          div.className = "thumb uploaded";
+          div.title = item.name || `素材 ${index + 1}`;
+          div.innerHTML = `<span class="thumb-label">${String(index + 1).padStart(2, "0")}</span>`;
+          const img = document.createElement("img");
+          img.alt = item.name || `素材 ${index + 1}`;
+          img.src = item.url;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "cover";
+          div.appendChild(img);
+          thumbGrid.appendChild(div);
+        });
+      }
+
+      function renderGeneratedOutputs(items, statusLabel = "生成完成") {
+        resultGrid.innerHTML = "";
+        const list = items.length ? items.slice(0, 4) : getDemoOutputs();
+
+        list.forEach((item, index) => {
+          const card = document.createElement("div");
+          card.className = "output-item";
+          card.dataset.label = item.label || RESULT_LABELS[index]?.label || `结果 ${index + 1}`;
+
+          const frame = document.createElement("div");
+          frame.className = "frame generated";
+          frame.style.backgroundSize = "cover";
+          frame.style.backgroundPosition = "center";
+          frame.style.backgroundRepeat = "no-repeat";
+          frame.style.backgroundImage = `url("${item.url}")`;
+
+          const caption = document.createElement("div");
+          caption.className = "caption";
+          caption.innerHTML = `<span>${escapeHTML(item.caption || RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`)}</span><span>${escapeHTML(item.size || state.config.sizeValue)}</span>`;
+
+          card.appendChild(frame);
+          card.appendChild(caption);
+          resultGrid.appendChild(card);
+        });
+
+        progressLabel.textContent = statusLabel;
+        runtimeSummary.textContent = `${statusLabel} · 已产出 ${list.length} 张结果`;
+      }
+
+      function getDemoOutputs() {
+        return RESULT_LABELS.map((item, index) => ({
+          label: item.label,
+          caption: item.caption,
+          size: state.config.sizeValue,
+          url: sampleSvgs[index % sampleSvgs.length],
+        }));
+      }
+
+      function renderErrorState(message) {
+        resultGrid.innerHTML = `
+          <div class="output-item" data-label="接口错误">
+            <div class="frame" style="display:grid;place-items:center;background:linear-gradient(135deg, rgba(159,125,44,.16), rgba(255,255,255,.28));">
+              <div style="padding:16px 18px;text-align:center;">
+                <div style="font-size:18px;font-weight:900;margin-bottom:10px;">请求失败</div>
+                <div style="font-size:13px;line-height:1.8;color:rgba(35,31,26,.68);">${escapeHTML(message)}</div>
+              </div>
+            </div>
+            <div class="caption"><span>请检查接口地址、跨域和返回结构</span><span>错误</span></div>
+          </div>
+          <div class="output-item" data-label="占位图">
+            <div class="frame" style="background-image:url('${sampleSvgs[0]}');background-size:cover;background-position:center;"></div>
+            <div class="caption"><span>等待重新生成</span><span>占位</span></div>
+          </div>
+          <div class="output-item" data-label="占位图">
+            <div class="frame" style="background-image:url('${sampleSvgs[1]}');background-size:cover;background-position:center;"></div>
+            <div class="caption"><span>等待重新生成</span><span>占位</span></div>
+          </div>
+          <div class="output-item" data-label="占位图">
+            <div class="frame" style="background-image:url('${sampleSvgs[2]}');background-size:cover;background-position:center;"></div>
+            <div class="caption"><span>等待重新生成</span><span>占位</span></div>
+          </div>
+        `;
+        runtimeSummary.textContent = "请求失败";
+      }
+
+      function extractImageUrl(candidate) {
+        if (!candidate) return "";
+        if (typeof candidate === "string") {
+          return candidate.trim();
+        }
+        if (candidate.url) return String(candidate.url).trim();
+        if (candidate.image_url) return String(candidate.image_url).trim();
+        if (candidate.dataUrl) return String(candidate.dataUrl).trim();
+        if (candidate.base64) {
+          const value = String(candidate.base64).trim();
+          return value.startsWith("data:") ? value : `data:image/png;base64,${value}`;
+        }
+        if (candidate.b64_json) {
+          return `data:image/png;base64,${String(candidate.b64_json).trim()}`;
+        }
+        return "";
+      }
+
+      function parseOutputs(payload, config) {
+        const results = [];
+        const pushItem = (candidate, index) => {
+          const url = extractImageUrl(candidate);
+          if (!url) return;
+          results.push({
+            url,
+            label: candidate?.label || candidate?.title || candidate?.name || RESULT_LABELS[index]?.label || `结果 ${index + 1}`,
+            caption: candidate?.caption || candidate?.prompt || RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`,
+            size: candidate?.size || config.sizeValue,
+          });
+        };
+
+        if (typeof payload === "string") {
+          const urlMatches = payload.match(/(https?:\/\/[^\s"'`]+|data:image\/[^\s"'`]+|blob:[^\s"'`]+)/g) || [];
+          urlMatches.forEach((match, index) => {
+            results.push({
+              url: match,
+              label: RESULT_LABELS[index]?.label || `结果 ${index + 1}`,
+              caption: RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`,
+              size: config.sizeValue,
+            });
+          });
+          return results;
+        }
+
+        if (payload?.data && Array.isArray(payload.data)) {
+          payload.data.forEach((item, index) => pushItem(item, index));
+        }
+        if (payload?.images && Array.isArray(payload.images)) {
+          payload.images.forEach((item, index) => pushItem(item, index));
+        }
+        if (payload?.output && Array.isArray(payload.output)) {
+          payload.output.forEach((item, index) => pushItem(item, index));
+        }
+        if (payload?.results && Array.isArray(payload.results)) {
+          payload.results.forEach((item, index) => pushItem(item, index));
+        }
+        if (payload?.url || payload?.image_url || payload?.base64 || payload?.b64_json) {
+          pushItem(payload, 0);
+        }
+        if (payload?.image) {
+          pushItem(payload.image, 0);
+        }
+        return results;
+      }
+
+      async function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(reader.error || new Error("文件读取失败"));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function readResponseBody(response) {
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return response.json();
+        }
+        if (contentType.startsWith("image/")) {
+          const blob = await response.blob();
+          return { image_url: await blobToDataUrl(blob) };
+        }
+        const text = await response.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          return text;
+        }
+      }
+
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(reader.error || new Error("图片读取失败"));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      function composeRequestPayload(config, prompt, images) {
+        if (config.mode === "openai-images") {
+          return {
+            url: buildEndpoint(config),
+            body: {
+              model: config.modelName,
+              prompt,
+              size: config.sizeValue,
+              n: config.outputCount,
+            },
+          };
+        }
+
+        return {
+          url: buildEndpoint(config),
+          body: {
+            prompt,
+            count: config.outputCount,
+            size: config.sizeValue,
+            model: config.modelName,
+            images,
+            source: "zhongtao-ai",
+          },
+        };
+      }
+
+      function updateStepCopy(stepIndex, detail) {
+        const target = stepNodes[stepIndex]?.querySelector("p");
+        if (target && detail) target.textContent = detail;
+      }
+
+      function resetResultPanel() {
+        resultGrid.innerHTML = "";
+        renderGeneratedOutputs([], "等待生成");
+      }
+
+      function resetSession() {
+        if (state.timer) {
+          clearInterval(state.timer);
+          state.timer = null;
+        }
+        setBusy(false);
+        setProgress(0);
+        setStep(0, "已读取 0 张产品参考图");
+        state.files = [];
+        revokeFileUrls();
+        revokeGeneratedUrls();
+        fileInput.value = "";
+        flowState.textContent = "等待上传";
+        progressLabel.textContent = "逐张生图中 (0/10)...";
+        progressPct.textContent = "0%";
+        runtimeSummary.textContent = "等待上传产品图";
+        renderThumbs();
+        renderGeneratedOutputs([], "等待生成");
+        renderQueueList(getQueueRecord());
+        updateSummaryCards();
+        showToast("已重置", "当前上传内容和生成结果已清空。");
+      }
+
+      function loadFiles(files) {
+        const imageFiles = [...files].filter((file) => file.type.startsWith("image/"));
+        revokeFileUrls();
+        state.files = imageFiles.slice(0, 9).map((file) => ({
+          file,
+          name: file.name,
+          url: URL.createObjectURL(file),
+        }));
+        state.fileUrls = state.files.map((item) => item.url);
+        renderThumbs();
+        updateSummaryCards();
+        setStep(0, `已读取 ${state.files.length} 张产品参考图`);
+        flowState.textContent = state.files.length ? "已读取素材" : "等待上传";
+        progressLabel.textContent = `已读取 ${state.files.length} 张产品参考图`;
+        updatePromptStatus("上传完成，等待生成");
+        updatePayloadPreview();
+        renderQueueList(getQueueRecord());
+      }
+
+      async function startGeneration() {
+        if (state.running) return;
+        if (state.timer) {
+          clearInterval(state.timer);
+          state.timer = null;
+        }
+
+        const promptText = promptInput.value.trim() || state.config.promptTemplate;
+        const config = cloneConfig({
+          ...state.config,
+          promptTemplate: promptText,
+        });
+        const fileCount = state.files.length;
+        const prompt = normalizePrompt(promptText, {
+          count: config.outputCount,
+          fileCount,
+          fileNames: state.files.map((file) => file.name).join("、"),
+        });
+
+        const hasEndpoint = hasConfiguredEndpoint(config);
+
+        revokeGeneratedUrls();
+        setBusy(true);
+        setProgress(8);
+        updateStepCopy(0, fileCount ? `已读取 ${fileCount} 张产品参考图` : "未上传图片，使用演示素材");
+        setStep(0, fileCount ? `已读取 ${fileCount} 张产品参考图` : "未上传图片，使用演示素材");
+        flowState.textContent = hasEndpoint ? "准备请求接口" : "演示模式";
+        runtimeSummary.textContent = hasEndpoint ? "准备发送真实请求" : "未配置接口，当前使用演示结果";
+        updatePromptStatus("生成中...");
+        updateSummaryCards();
+
+        const progressSteps = [
+          [1, "识别素材与上传准备中..."],
+          [2, "生成提示词与请求体..."],
+          [3, "等待接口返回图像..."],
+        ];
+
+        let simulatedProgress = 8;
+        state.timer = window.setInterval(() => {
+          simulatedProgress = Math.min(simulatedProgress + 6, 86);
+          setProgress(simulatedProgress);
+        }, 260);
+
+        try {
+          const images = await Promise.all(
+            state.files.map(async (item) => ({
+              name: item.name,
+              mime: item.file.type || "image/*",
+              dataUrl: await fileToDataUrl(item.file),
+            }))
+          );
+
+          if (!hasEndpoint) {
+            clearInterval(state.timer);
+            state.timer = null;
+            setProgress(100);
+            setStep(3, "演示模式已完成");
+            const demoOutputs = getDemoOutputs();
+            renderGeneratedOutputs(demoOutputs, "逐张出图中 (4/4)...");
+            pushHistoryRecord({
+              status: "completed",
+              source: "demo",
+              prompt,
+              endpoint: "demo://local",
+              modelName: config.modelName,
+              sizeValue: config.sizeValue,
+              outputCount: demoOutputs.length,
+              fileCount,
+              fileNames: state.files.map((item) => item.name),
+              outputs: demoOutputs,
+              config: {
+                mode: config.mode,
+                apiBaseUrl: config.apiBaseUrl,
+                customEndpoint: config.customEndpoint,
+                modelName: config.modelName,
+                sizeValue: config.sizeValue,
+                outputCount: config.outputCount,
+                promptTemplate: promptText,
+              },
+            });
+            setBusy(false);
+            updatePromptStatus("接口未配置，已展示演示结果");
+            showToast("当前是演示模式", "请在“管理”里填写接口后再执行真实生成。");
+            return;
+          }
+
+          progressSteps.forEach(([index, detail]) => updateStepCopy(index, detail));
+          setStep(1, "识别产品结构与素材特征...");
+
+          const requestPayload = composeRequestPayload(config, prompt, images);
+          updatePayloadPreview();
+
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), 120000);
+
+          setStep(2, "提示词已生成，接口请求发送中...");
+          flowState.textContent = "请求接口中";
+          setProgress(32);
+
+          const response = await fetch(requestPayload.url, {
+            method: "POST",
+            headers: buildHeaders(config),
+            body: JSON.stringify(requestPayload.body),
+            signal: controller.signal,
+            mode: "cors",
+          });
+
+          window.clearTimeout(timeout);
+          setStep(3, "等待接口返回最终图片...");
+          setProgress(72);
+
+          const parsed = await readResponseBody(response);
+          if (!response.ok) {
+            const errorText =
+              typeof parsed === "string"
+                ? parsed
+                : parsed?.error?.message || parsed?.message || parsed?.detail || `HTTP ${response.status}`;
+            throw new Error(errorText);
+          }
+
+          const outputs = parseOutputs(parsed, config);
+          if (!outputs.length) {
+            throw new Error("接口返回成功，但没有找到图片字段。请检查返回结构是否包含 url / images / data。");
+          }
+
+          clearInterval(state.timer);
+          state.timer = null;
+          setProgress(100);
+          setStep(3, `逐张出图中 (${outputs.length}/${config.outputCount})...`);
+          renderGeneratedOutputs(outputs, `逐张出图中 (${outputs.length}/${config.outputCount})...`);
+          pushHistoryRecord({
+            status: "completed",
+            source: "api",
+            prompt,
+            endpoint: requestPayload.url,
+            modelName: config.modelName,
+            sizeValue: config.sizeValue,
+            outputCount: outputs.length,
+            fileCount,
+            fileNames: state.files.map((item) => item.name),
+            outputs,
+            config: {
+              mode: config.mode,
+              apiBaseUrl: config.apiBaseUrl,
+              customEndpoint: config.customEndpoint,
+              modelName: config.modelName,
+              sizeValue: config.sizeValue,
+              outputCount: config.outputCount,
+              promptTemplate: promptText,
+            },
+          });
+          flowState.textContent = "生成完成";
+          updatePromptStatus("生成完成");
+          showToast("生成完成", `接口已返回 ${outputs.length} 张图片。`);
+        } catch (error) {
+          clearInterval(state.timer);
+          state.timer = null;
+          setProgress(100);
+          setStep(3, "请求失败");
+          renderErrorState(error?.message || "未知错误");
+          pushHistoryRecord({
+            status: "failed",
+            source: "api",
+            prompt,
+            endpoint: hasEndpoint ? summarizeEndpoint(config) : "demo://local",
+            modelName: config.modelName,
+            sizeValue: config.sizeValue,
+            outputCount: 0,
+            fileCount,
+            fileNames: state.files.map((item) => item.name),
+            outputs: [],
+            error: error?.message || "未知错误",
+            config: {
+              mode: config.mode,
+              apiBaseUrl: config.apiBaseUrl,
+              customEndpoint: config.customEndpoint,
+              modelName: config.modelName,
+              sizeValue: config.sizeValue,
+              outputCount: config.outputCount,
+              promptTemplate: promptText,
+            },
+          });
+          updatePromptStatus("请求失败");
+          showToast("生成失败", error?.message || "请检查接口配置、跨域和返回结构。");
+        } finally {
+          setBusy(false);
+          updatePayloadPreview();
+          if (!state.files.length) {
+            flowState.textContent = "等待上传";
+          }
+        }
+      }
+
+      function testConfig() {
+        try {
+          const endpoint = validateConfig();
+          showToast("配置检查通过", `当前接口地址：${endpoint}`);
+        } catch (error) {
+          showToast("配置未通过", error?.message || "请检查接口字段。");
+        }
+      }
+
+      function onModalBackdropClick(event) {
+        if (event.target === configModal) {
+          closeConfigModal();
+        }
+      }
+
+      fileInput.addEventListener("change", (event) => {
+        loadFiles(event.target.files || []);
+      });
+
+      dropzone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+
+      dropzone.addEventListener("dragleave", () => {
+        dropzone.classList.remove("dragover");
+      });
+
+      dropzone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropzone.classList.remove("dragover");
+        loadFiles(event.dataTransfer.files || []);
+      });
+
+      manageBtn.addEventListener("click", openConfigModal);
+      heroManageBtn?.addEventListener("click", openConfigModal);
+      heroStartBtn?.addEventListener("click", () => scrollToSection("#workspaceSection"));
+      heroHistoryBtn?.addEventListener("click", () => scrollToSection("#archiveSection"));
+      resetBtn.addEventListener("click", resetSession);
+      clearHistoryBtn?.addEventListener("click", clearHistoryRecords);
+      closeConfigBtn.addEventListener("click", closeConfigModal);
+      configModal.addEventListener("click", onModalBackdropClick);
+      saveConfigBtn.addEventListener("click", saveModalConfig);
+      restoreDefaultBtn.addEventListener("click", restoreDefaults);
+      testConfigBtn.addEventListener("click", testConfig);
+      savePromptBtn.addEventListener("click", savePromptTemplate);
+      startBtn.addEventListener("click", startGeneration);
+      clearBtn.addEventListener("click", resetSession);
+      historyList?.addEventListener("click", (event) => {
+        const actionButton = event.target.closest("button[data-action]");
+        if (!actionButton) return;
+        const { action, id } = actionButton.dataset;
+        if (!id) return;
+        if (action === "view") {
+          selectHistoryRecord(id);
+        } else if (action === "reuse") {
+          reuseHistoryRecord(id);
+        } else if (action === "delete") {
+          removeHistoryRecord(id);
+        }
+      });
+
+      promptInput.addEventListener("input", () => {
+        modalPromptInput.value = promptInput.value;
+        updatePromptStatus("本地未保存");
+        updateSummaryCards();
+        updatePayloadPreview();
+      });
+
+      modalPromptInput.addEventListener("input", updatePayloadPreview);
+      apiBaseUrlInput.addEventListener("input", updatePayloadPreview);
+      customEndpointInput.addEventListener("input", updatePayloadPreview);
+      modelNameInput.addEventListener("input", updatePayloadPreview);
+      sizeValueInput.addEventListener("input", updatePayloadPreview);
+      outputCountInput.addEventListener("input", updatePayloadPreview);
+      providerModeInput.addEventListener("change", updatePayloadPreview);
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && configModal.classList.contains("open")) {
+          closeConfigModal();
+        }
+      });
+
+      function init() {
+        state.selectedHistoryId = state.history[0]?.id || null;
+        renderThumbs();
+        renderGeneratedOutputs([], "等待生成");
+        promptInput.value = state.config.promptTemplate;
+        modalPromptInput.value = state.config.promptTemplate;
+        updatePromptStatus("本地未保存");
+        setStep(0, "已读取 0 张产品参考图");
+        setProgress(0);
+        updateSummaryCards();
+        updatePayloadPreview();
+        renderHistory();
+        if (!hasConfiguredEndpoint(state.config)) {
+          apiPill.textContent = "API 未配置";
+        }
+      }
+
+      function hasConfiguredEndpoint(config) {
+        const base = String(config.apiBaseUrl || "").trim();
+        const endpoint = String(config.customEndpoint || "").trim();
+        if (/^https?:\/\//i.test(endpoint)) return true;
+        return Boolean(base && endpoint);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
