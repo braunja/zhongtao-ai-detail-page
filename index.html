@@ -2152,29 +2152,24 @@
                 <input id="customEndpoint" type="text" placeholder="/generate/product-images" />
               </div>
               <div class="field">
-                <label for="modelName">模型 / 工作流名称</label>
-                <input id="modelName" type="text" list="modelNamePresetList" placeholder="gpt-image-1 / custom-workflow" />
-                <datalist id="modelNamePresetList">
-                  <option value="gpt-image-1"></option>
-                  <option value="gpt-4.1-mini"></option>
-                  <option value="gemini-2.5-flash"></option>
-                  <option value="gemini-2.5-pro"></option>
-                  <option value="custom-workflow"></option>
-                </datalist>
-                <div class="field-help">
-                  不需要获取模型列表，直接填写接口实际支持的模型名，或者你工作流里定义的名称。
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                  <label for="modelName" style="margin:0;">模型 / 工作流名称</label>
+                  <button class="button small" id="refreshModelsBtn" type="button">自动获取模型</button>
+                </div>
+                <input id="modelName" type="text" list="modelNamePresetList" placeholder="点击自动获取，或手动填写" />
+                <datalist id="modelNamePresetList"></datalist>
+                <div class="field-help" id="modelNameHelp">
+                  页面会尝试从接口自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。
                 </div>
               </div>
               <div class="field">
-                <label for="sizeValue">生成尺寸</label>
-                <input id="sizeValue" type="text" placeholder="1024x1024" />
+                <label for="sizeValue">生成宽度</label>
+                <input id="sizeValue" type="number" min="320" step="1" placeholder="1200" />
+                <div class="field-help">长度自动，接口请求里会传 `width=1200` 和 `height=auto`。</div>
               </div>
               <div class="field">
                 <label for="outputCount">输出张数</label>
                 <input id="outputCount" type="number" min="1" max="12" step="1" />
-              </div>
-              <div class="field-help">
-                如果你的平台不提供模型列表，这里也没关系，页面会把你手填的模型名直接传给接口。
               </div>
             </div>
 
@@ -2224,7 +2219,7 @@
         apiKey: "",
         customEndpoint: "/generate/product-images",
         modelName: "gpt-image-1",
-        sizeValue: "1024x1024",
+        sizeValue: "1200",
         outputCount: 4,
         promptTemplate: DEFAULT_PROMPT,
       };
@@ -2257,6 +2252,7 @@
       const closeConfigBtn = document.getElementById("closeConfigBtn");
       const saveConfigBtn = document.getElementById("saveConfigBtn");
       const testConfigBtn = document.getElementById("testConfigBtn");
+      const refreshModelsBtn = document.getElementById("refreshModelsBtn");
       const restoreDefaultBtn = document.getElementById("restoreDefaultBtn");
       const apiBaseUrlInput = document.getElementById("apiBaseUrl");
       const apiKeyInput = document.getElementById("apiKey");
@@ -2264,6 +2260,8 @@
       const providerModeInput = document.getElementById("providerMode");
       const modelNameInput = document.getElementById("modelName");
       const sizeValueInput = document.getElementById("sizeValue");
+      const modelNameHelp = document.getElementById("modelNameHelp");
+      const modelNamePresetList = document.getElementById("modelNamePresetList");
       const outputCountInput = document.getElementById("outputCount");
       const modalPromptInput = document.getElementById("modalPrompt");
       const payloadPreview = document.getElementById("payloadPreview");
@@ -2697,6 +2695,95 @@
         return headers;
       }
 
+      function normalizeModelName(value) {
+        return String(value || "").trim();
+      }
+
+      function normalizeModelList(payload) {
+        const candidates = [];
+        const collect = (item) => {
+          if (!item) return;
+          if (typeof item === "string") {
+            const name = item.trim();
+            if (name) candidates.push(name);
+            return;
+          }
+          if (typeof item !== "object") return;
+          const name = item.id || item.name || item.model || item.slug || item.value;
+          if (name) candidates.push(String(name).trim());
+        };
+
+        if (Array.isArray(payload)) {
+          payload.forEach(collect);
+        } else if (payload && typeof payload === "object") {
+          if (Array.isArray(payload.data)) payload.data.forEach(collect);
+          if (Array.isArray(payload.models)) payload.models.forEach(collect);
+          if (Array.isArray(payload.items)) payload.items.forEach(collect);
+          if (Array.isArray(payload.list)) payload.list.forEach(collect);
+        }
+
+        return [...new Set(candidates.filter(Boolean))];
+      }
+
+      function renderModelOptions(models) {
+        const list = models.length ? models : [
+          "gpt-image-1",
+          "gpt-4.1-mini",
+          "gemini-2.5-flash",
+          "gemini-2.5-pro",
+          "custom-workflow",
+        ];
+        modelNamePresetList.innerHTML = list.map((name) => `<option value="${escapeAttr(name)}"></option>`).join("");
+      }
+
+      async function fetchModelsFromEndpoint() {
+        const config = state.config;
+        const endpoint = buildEndpoint(config);
+        if (!endpoint) {
+          throw new Error("请先填写 API Base URL 或完整接口地址。");
+        }
+        const baseUrl = new URL(endpoint);
+        const tries = [];
+        const path = baseUrl.pathname.replace(/\/+$/, "");
+        const origin = baseUrl.origin;
+        const authHeaders = buildHeaders(config);
+        delete authHeaders["Content-Type"];
+
+        if (config.mode === "openai-images") {
+          tries.push(`${origin}/v1/models`);
+        }
+        tries.push(`${origin}/models`);
+        tries.push(`${origin}/v1/models`);
+        tries.push(`${origin}/v1beta/models`);
+        if (path && path !== "/") {
+          const parent = path.split("/").slice(0, -1).join("/") || "";
+          tries.push(`${origin}${parent}/models`);
+        }
+
+        const seen = new Set();
+        for (const url of tries) {
+          if (seen.has(url)) continue;
+          seen.add(url);
+          try {
+            const response = await fetch(url, {
+              method: "GET",
+              headers: authHeaders,
+              mode: "cors",
+            });
+            if (!response.ok) continue;
+            const body = await response.json();
+            const models = normalizeModelList(body);
+            if (models.length) {
+              return models;
+            }
+          } catch {
+            // try next endpoint
+          }
+        }
+
+        throw new Error("未能自动获取模型列表，请检查接口是否支持 GET /models 或手动填写模型名。");
+      }
+
       function syncFieldsFromConfig() {
         providerModeInput.value = state.config.mode;
         apiBaseUrlInput.value = state.config.apiBaseUrl;
@@ -2707,6 +2794,7 @@
         outputCountInput.value = state.config.outputCount;
         modalPromptInput.value = state.config.promptTemplate;
         promptInput.value = state.config.promptTemplate;
+        modelNameHelp.textContent = "页面会尝试从接口自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。";
         updateSummaryCards();
         updatePayloadPreview();
       }
@@ -2745,18 +2833,20 @@
           fileCount: state.files.length,
           fileNames: fileNames.join("、"),
         });
+        const width = Number(config.sizeValue || defaultConfig.sizeValue) || 1200;
         const previewBody =
           config.mode === "openai-images"
             ? {
                 model: config.modelName,
                 prompt,
-                size: config.sizeValue,
+                size: `${width}xauto`,
                 n: config.outputCount,
               }
             : {
                 prompt,
                 count: config.outputCount,
-                size: config.sizeValue,
+                width,
+                height: "auto",
                 model: config.modelName,
                 images: fileNames.map((name, index) => ({
                   name,
@@ -2776,10 +2866,29 @@
         payloadPreview.textContent = JSON.stringify(preview, null, 2);
       }
 
+      async function refreshModelOptions({ notify = true } = {}) {
+        try {
+          const models = await fetchModelsFromEndpoint();
+          renderModelOptions(models);
+          modelNameHelp.textContent = `已自动获取 ${models.length} 个模型/工作流名称，直接选一个即可。`;
+          if (!String(modelNameInput.value || "").trim() && models[0]) {
+            modelNameInput.value = models[0];
+          }
+          updateSummaryCards();
+          updatePayloadPreview();
+          if (notify) showToast("模型列表已更新", `已获取 ${models.length} 个可用模型/工作流名称。`);
+        } catch (error) {
+          renderModelOptions([]);
+          modelNameHelp.textContent = error?.message || "自动获取失败，请手动输入模型名。";
+          if (notify) showToast("自动获取失败", error?.message || "请确认接口支持模型列表读取。");
+        }
+      }
+
       function openConfigModal() {
         syncFieldsFromConfig();
         configModal.classList.add("open");
         configModal.setAttribute("aria-hidden", "false");
+        refreshModelOptions({ notify: false });
       }
 
       function scrollToSection(selector) {
@@ -2810,10 +2919,11 @@
           apiKey: apiKeyInput.value.trim(),
           customEndpoint: customEndpointInput.value.trim(),
           modelName: modelNameInput.value.trim() || defaultConfig.modelName,
-          sizeValue: sizeValueInput.value.trim() || defaultConfig.sizeValue,
+          sizeValue: String(sizeValueInput.value || "").trim() || defaultConfig.sizeValue,
           outputCount: Math.max(1, Math.min(12, Number(outputCountInput.value || defaultConfig.outputCount))),
           promptTemplate: modalPromptInput.value.trim() || defaultConfig.promptTemplate,
         });
+        sizeValueInput.value = String(state.config.sizeValue || defaultConfig.sizeValue);
         promptInput.value = state.config.promptTemplate;
         saveConfigToStorage();
         updateSummaryCards();
@@ -2842,7 +2952,7 @@
           throw new Error("接口地址格式不正确，请检查 API Base URL 和接口路径。");
         }
         if (!String(config.modelName || "").trim()) {
-          throw new Error("请先填写模型 / 工作流名称。页面不会自动拉取模型列表。");
+          throw new Error("请先填写模型 / 工作流名称。");
         }
         return endpoint;
       }
@@ -2947,9 +3057,9 @@
               <table class="spec-table">
                 <tr><th>素材</th><td>${escapeHTML(state.files.length ? `${state.files.length} 张上传产品图` : "演示素材")}</td></tr>
                 <tr><th>输出</th><td>${escapeHTML(`${state.config.outputCount} 张模块图 / 长详情页拼装`)}</td></tr>
-                <tr><th>风格</th><td>${escapeHTML(state.config.modelName || "detail-page")}</td></tr>
-                <tr><th>接口</th><td>${escapeHTML(hasConfiguredEndpoint(state.config) ? buildEndpoint(state.config) : "本地演示")}</td></tr>
-              </table>
+              <tr><th>风格</th><td>${escapeHTML(state.config.modelName || "detail-page")}</td></tr>
+              <tr><th>接口</th><td>${escapeHTML(hasConfiguredEndpoint(state.config) ? buildEndpoint(state.config) : "本地演示")}</td></tr>
+            </table>
             </div>
           </div>
           <div class="module">
@@ -2958,11 +3068,11 @@
               <div class="sequence">
                 <div class="sequence-item">
                   <img alt="" src="${escapeAttr(sceneOne?.url || hero.url)}" />
-                  <div class="caption"><span>${escapeHTML(sceneOne?.caption || "使用场景 / 延展页")}</span><span>${escapeHTML(sceneOne?.size || state.config.sizeValue)}</span></div>
+                  <div class="caption"><span>${escapeHTML(sceneOne?.caption || "使用场景 / 延展页")}</span><span>${escapeHTML(sceneOne?.size || `${state.config.sizeValue}w`)}</span></div>
                 </div>
                 <div class="sequence-item">
                   <img alt="" src="${escapeAttr(sceneTwo?.url || hero.url)}" />
-                  <div class="caption"><span>${escapeHTML(sceneTwo?.caption || "细节特写 / 说明页")}</span><span>${escapeHTML(sceneTwo?.size || state.config.sizeValue)}</span></div>
+                  <div class="caption"><span>${escapeHTML(sceneTwo?.caption || "细节特写 / 说明页")}</span><span>${escapeHTML(sceneTwo?.size || `${state.config.sizeValue}w`)}</span></div>
                 </div>
               </div>
             </div>
@@ -2979,7 +3089,7 @@
         return RESULT_LABELS.map((item, index) => ({
           label: item.label,
           caption: item.caption,
-          size: state.config.sizeValue,
+          size: `${state.config.sizeValue}w`,
           url: sampleSvgs[index % sampleSvgs.length],
         }));
       }
@@ -3038,7 +3148,7 @@
             url,
             label: candidate?.label || candidate?.title || candidate?.name || RESULT_LABELS[index]?.label || `结果 ${index + 1}`,
             caption: candidate?.caption || candidate?.prompt || RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`,
-            size: candidate?.size || config.sizeValue,
+            size: candidate?.size || `${config.sizeValue}w`,
           });
         };
 
@@ -3049,7 +3159,7 @@
               url: match,
               label: RESULT_LABELS[index]?.label || `结果 ${index + 1}`,
               caption: RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`,
-              size: config.sizeValue,
+              size: `${config.sizeValue}w`,
             });
           });
           return results;
@@ -3112,13 +3222,14 @@
       }
 
       function composeRequestPayload(config, prompt, images) {
+        const width = Number(config.sizeValue || defaultConfig.sizeValue) || 1200;
         if (config.mode === "openai-images") {
           return {
             url: buildEndpoint(config),
             body: {
               model: config.modelName,
               prompt,
-              size: config.sizeValue,
+              size: `${width}xauto`,
               n: config.outputCount,
             },
           };
@@ -3129,7 +3240,8 @@
           body: {
             prompt,
             count: config.outputCount,
-            size: config.sizeValue,
+            width,
+            height: "auto",
             model: config.modelName,
             images,
             source: "zhongtao-ai",
@@ -3427,6 +3539,7 @@
       saveConfigBtn.addEventListener("click", saveModalConfig);
       restoreDefaultBtn.addEventListener("click", restoreDefaults);
       testConfigBtn.addEventListener("click", testConfig);
+      refreshModelsBtn.addEventListener("click", () => refreshModelOptions());
       savePromptBtn.addEventListener("click", savePromptTemplate);
       startBtn.addEventListener("click", startGeneration);
       clearBtn.addEventListener("click", resetSession);
@@ -3458,6 +3571,7 @@
       sizeValueInput.addEventListener("input", updatePayloadPreview);
       outputCountInput.addEventListener("input", updatePayloadPreview);
       providerModeInput.addEventListener("change", updatePayloadPreview);
+      apiBaseUrlInput.addEventListener("change", () => refreshModelOptions({ notify: false }));
 
       window.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && configModal.classList.contains("open")) {
