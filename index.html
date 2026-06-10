@@ -572,7 +572,7 @@
 
       .result-stage {
         margin-top: 18px;
-        min-height: 360px;
+        min-height: 820px;
         border-radius: 22px;
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 239, 232, 0.56)),
@@ -597,7 +597,7 @@
 
       .result-grid {
         display: grid;
-        grid-template-columns: 1.3fr 1fr;
+        grid-template-columns: 1.15fr 0.85fr;
         gap: 14px;
         min-height: 100%;
       }
@@ -669,12 +669,187 @@
         font-weight: 700;
       }
 
-      .output {
+      .detail-page {
         position: absolute;
-        inset: 60px 24px 24px;
+        inset: 58px 18px 18px;
+        border-radius: 16px;
+        overflow: auto;
+        padding: 10px 10px 18px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(244, 239, 231, 0.76));
+        border: 1px solid rgba(40, 34, 28, 0.08);
+      }
+
+      .detail-page::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .detail-page::-webkit-scrollbar-thumb {
+        background: rgba(40, 34, 28, 0.16);
+        border-radius: 999px;
+      }
+
+      .detail-page .hero-banner {
+        height: 420px;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(9, 12, 18, 0.14), rgba(9, 12, 18, 0.52)),
+          radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.2), transparent 28%),
+          linear-gradient(135deg, rgba(123, 139, 117, 0.45), rgba(155, 124, 74, 0.3));
+      }
+
+      .detail-page .hero-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        mix-blend-mode: normal;
+        opacity: 0.95;
+      }
+
+      .detail-page .hero-copy {
+        position: absolute;
+        left: 18px;
+        bottom: 16px;
+        right: 18px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(10px);
+      }
+
+      .detail-page .hero-copy strong {
+        display: block;
+        font-size: 20px;
+        font-weight: 900;
+        color: #1f1a14;
+      }
+
+      .detail-page .hero-copy span {
+        display: block;
+        margin-top: 6px;
+        color: rgba(35, 31, 26, 0.7);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .detail-page .module {
+        margin-top: 12px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(40, 34, 28, 0.08);
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .detail-page .module-title {
+        padding: 12px 14px 10px;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        color: rgba(35, 31, 26, 0.72);
+        background: rgba(40, 34, 28, 0.03);
+      }
+
+      .detail-page .module-body {
+        padding: 14px;
+      }
+
+      .detail-page .two-col {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .detail-page .feature-card {
+        min-height: 160px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(235, 241, 245, 0.9), rgba(211, 223, 232, 0.9));
+        position: relative;
+      }
+
+      .detail-page .feature-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .detail-page .feature-card .label {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.82);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .detail-page .spec-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+        color: rgba(35, 31, 26, 0.75);
+      }
+
+      .detail-page .spec-table th,
+      .detail-page .spec-table td {
+        border-bottom: 1px solid rgba(40, 34, 28, 0.08);
+        padding: 8px 6px;
+        text-align: left;
+      }
+
+      .detail-page .spec-table th {
+        width: 30%;
+        color: rgba(35, 31, 26, 0.52);
+        font-weight: 800;
+      }
+
+      .detail-page .sequence {
+        display: grid;
+        gap: 10px;
+      }
+
+      .detail-page .sequence-item {
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(249, 247, 244, 0.96), rgba(239, 233, 226, 0.9));
+        border: 1px solid rgba(40, 34, 28, 0.08);
+      }
+
+      .detail-page .sequence-item img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .detail-page .sequence-item .caption {
+        position: static;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px 12px;
+        color: rgba(35, 31, 26, 0.68);
+      }
+
+      .detail-page .closing-note {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(140, 160, 116, 0.16), rgba(159, 125, 44, 0.12));
+        color: rgba(35, 31, 26, 0.72);
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .output {
+        display: grid;
         gap: 14px;
+        min-height: 100%;
       }
 
       .output-item {
@@ -684,7 +859,15 @@
         box-shadow: 0 10px 24px rgba(57, 48, 33, 0.06);
         position: relative;
         overflow: hidden;
-        min-height: 190px;
+        min-height: 220px;
+      }
+
+      .output-item.wide {
+        min-height: 280px;
+      }
+
+      .output-item.tall {
+        min-height: 340px;
       }
 
       .output-item::before {
@@ -1686,10 +1869,10 @@
       </header>
 
       <section class="hero reveal" style="animation-delay: 0.05s">
-        <div class="hero-kicker">上传商品图，一键生成详情页主图</div>
-        <h1>上传产品图，自动生成详情页主图</h1>
+        <div class="hero-kicker">上传商品图，一键生成详情页长图</div>
+        <h1>上传产品图，自动生成天猫详情页结构</h1>
         <p>
-          只保留必要操作：上传图片、开始生成、查看结果。我们把商品识别、卖点提炼、版式排布和主图输出压缩成一个流畅的工作台，
+          只保留必要操作：上传图片、开始生成、查看结果。我们把商品识别、卖点提炼、版式排布、参数表和整页长图输出压缩成一个流畅的工作台，
           让你像在参考图里那样快速完成整套详情页制作。
         </p>
         <div class="hero-stats">
@@ -1713,7 +1896,7 @@
           <div class="panel-header">
             <div>
               <div class="panel-title">产品图片</div>
-              <div class="panel-subtitle">支持多选，建议包含正面、细节、包装</div>
+              <div class="panel-subtitle">支持多选，建议包含正面、细节、包装和场景图</div>
             </div>
             <span class="status">实时预览</span>
           </div>
@@ -1746,7 +1929,7 @@
           <div class="panel-header">
             <div>
               <div class="panel-title">生成流程</div>
-              <div class="panel-subtitle">从识别到出图的状态，会像参考图一样实时显示</div>
+              <div class="panel-subtitle">从识别到成页的状态，会像参考图一样实时显示</div>
             </div>
             <span class="chip" id="flowState">等待上传</span>
           </div>
@@ -1764,7 +1947,7 @@
                 id="promptInput"
                 class="prompt-textarea"
                 spellcheck="false"
-              >你是专业电商视觉设计师。请基于上传的产品参考图，生成{{count}}张天猫详情页主图。要求：画面干净、主体突出、统一品牌视觉、适合淘宝/天猫详情页首屏。请结合上传图片中的产品特点，输出高质感、可直接用于商品页的商业图。</textarea>
+              >你是专业电商视觉设计师。请基于上传的产品参考图，输出一整套天猫详情页长图结构：首屏主视觉、卖点模块、细节特写、参数说明、场景延展、收尾页。要求：画面干净、主体突出、统一品牌视觉、适合淘宝/天猫详情页，尽量给出可直接拼接的多模块内容。请结合上传图片中的产品特点，输出高质感、可直接用于商品页的商业图。</textarea>
               <div class="prompt-foot">
                 <span>支持变量：{{count}} {{file_count}} {{file_names}}</span>
                 <span id="promptStatus">本地未保存</span>
@@ -1785,12 +1968,12 @@
               <div class="step" data-step="2">
                 <div class="num">03</div>
                 <h3>生成提示词</h3>
-                <p>逐张生成电商图描述与版式</p>
+                <p>逐张生成详情页模块描述与版式</p>
               </div>
               <div class="step" data-step="3">
                 <div class="num">04</div>
                 <h3>逐张出图</h3>
-                <p>同步输出 10 张可用的详情页主图</p>
+                <p>同步输出可拼接成整页的模块图</p>
               </div>
             </div>
 
@@ -1808,27 +1991,58 @@
               <div class="result-grid">
                 <div class="result-card big">
                   <div class="result-title">
-                    <strong>主视觉输出</strong>
-                    <span>适合商品详情页首屏</span>
+                    <strong>详情页输出</strong>
+                    <span>适合商品详情页首屏与整页拼接</span>
                   </div>
                   <div class="canvas">
                     <div class="canvas-note">生成结果展示区</div>
                     <div class="output" id="resultGrid">
-                      <div class="output-item" data-label="封面主图">
-                        <div class="frame"></div>
-                        <div class="caption"><span>卖点图 / 主标题</span><span>960 × 960</span></div>
-                      </div>
-                      <div class="output-item" data-label="细节特写">
-                        <div class="frame"></div>
-                        <div class="caption"><span>材质 / 结构 / 纹理</span><span>960 × 960</span></div>
-                      </div>
-                      <div class="output-item" data-label="场景图">
-                        <div class="frame"></div>
-                        <div class="caption"><span>生活方式 / 使用场景</span><span>960 × 960</span></div>
-                      </div>
-                      <div class="output-item" data-label="对比图">
-                        <div class="frame"></div>
-                        <div class="caption"><span>规格对照 / 参数说明</span><span>960 × 960</span></div>
+                      <div class="detail-page" data-mode="placeholder">
+                        <div class="hero-banner">
+                          <img alt="详情页主视觉占位" src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80" />
+                          <div class="hero-copy">
+                            <strong>中涛 AI · 详情页长图生成</strong>
+                            <span>上传产品图后，会把主图、卖点、细节、参数、场景和收尾模块拼成整套详情页结构。</span>
+                          </div>
+                        </div>
+                        <div class="module">
+                          <div class="module-title">01 · 主视觉首屏</div>
+                          <div class="module-body">
+                            <div class="two-col">
+                              <div class="feature-card"><img alt="" src="https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80" /><div class="label">商品主图</div></div>
+                              <div class="feature-card"><img alt="" src="https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80" /><div class="label">卖点组合</div></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="module">
+                          <div class="module-title">02 · 参数与卖点</div>
+                          <div class="module-body">
+                            <table class="spec-table">
+                              <tr><th>材质</th><td>根据上传图片自动识别</td></tr>
+                              <tr><th>版式</th><td>天猫详情页竖向长页</td></tr>
+                              <tr><th>风格</th><td>干净、统一、可落地</td></tr>
+                              <tr><th>输出</th><td>模块化图片序列 + 页面拼装建议</td></tr>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="module">
+                          <div class="module-title">03 · 场景延展</div>
+                          <div class="module-body">
+                            <div class="sequence">
+                              <div class="sequence-item">
+                                <img alt="" src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80" />
+                                <div class="caption"><span>使用场景 / 氛围图</span><span>横向延展</span></div>
+                              </div>
+                              <div class="sequence-item">
+                                <img alt="" src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=80" />
+                                <div class="caption"><span>细节说明 / 局部特写</span><span>高清展示</span></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="closing-note">
+                          这只是默认预览。你接上真实图片生成接口后，页面会把接口返回的模块图自动替换到这里，形成可直接给同事查看的长详情页效果。
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2686,31 +2900,63 @@
 
       function renderGeneratedOutputs(items, statusLabel = "生成完成") {
         resultGrid.innerHTML = "";
-        const list = items.length ? items.slice(0, 4) : getDemoOutputs();
+        const list = items.length ? items : getDemoOutputs();
+        const hero = list[0] || getDemoOutputs()[0];
+        const cards = list.slice(0, 4);
+        const [mainOne, mainTwo, sceneOne, sceneTwo] = cards;
 
-        list.forEach((item, index) => {
-          const card = document.createElement("div");
-          card.className = "output-item";
-          card.dataset.label = item.label || RESULT_LABELS[index]?.label || `结果 ${index + 1}`;
-
-          const frame = document.createElement("div");
-          frame.className = "frame generated";
-          frame.style.backgroundSize = "cover";
-          frame.style.backgroundPosition = "center";
-          frame.style.backgroundRepeat = "no-repeat";
-          frame.style.backgroundImage = `url("${item.url}")`;
-
-          const caption = document.createElement("div");
-          caption.className = "caption";
-          caption.innerHTML = `<span>${escapeHTML(item.caption || RESULT_LABELS[index]?.caption || `第 ${index + 1} 张`)}</span><span>${escapeHTML(item.size || state.config.sizeValue)}</span>`;
-
-          card.appendChild(frame);
-          card.appendChild(caption);
-          resultGrid.appendChild(card);
-        });
+        const page = document.createElement("div");
+        page.className = "detail-page";
+        page.dataset.mode = items.length ? "generated" : "placeholder";
+        page.innerHTML = `
+          <div class="hero-banner">
+            <img alt="详情页主视觉" src="${escapeAttr(hero.url)}" />
+            <div class="hero-copy">
+              <strong>${escapeHTML(hero.label || "详情页主视觉")}</strong>
+              <span>${escapeHTML(hero.caption || "把主图、卖点、细节、参数和场景拼成整套详情页长图。")}</span>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">01 · 主视觉首屏</div>
+            <div class="module-body">
+              <div class="two-col">
+                <div class="feature-card"><img alt="" src="${escapeAttr(mainOne?.url || hero.url)}" /><div class="label">${escapeHTML(mainOne?.label || "主图")}</div></div>
+                <div class="feature-card"><img alt="" src="${escapeAttr(mainTwo?.url || hero.url)}" /><div class="label">${escapeHTML(mainTwo?.label || "卖点图")}</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">02 · 参数与卖点</div>
+            <div class="module-body">
+              <table class="spec-table">
+                <tr><th>素材</th><td>${escapeHTML(state.files.length ? `${state.files.length} 张上传产品图` : "演示素材")}</td></tr>
+                <tr><th>输出</th><td>${escapeHTML(`${state.config.outputCount} 张模块图 / 长详情页拼装`)}</td></tr>
+                <tr><th>风格</th><td>${escapeHTML(state.config.modelName || "detail-page")}</td></tr>
+                <tr><th>接口</th><td>${escapeHTML(hasConfiguredEndpoint(state.config) ? buildEndpoint(state.config) : "本地演示")}</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">03 · 场景延展</div>
+            <div class="module-body">
+              <div class="sequence">
+                <div class="sequence-item">
+                  <img alt="" src="${escapeAttr(sceneOne?.url || hero.url)}" />
+                  <div class="caption"><span>${escapeHTML(sceneOne?.caption || "使用场景 / 延展页")}</span><span>${escapeHTML(sceneOne?.size || state.config.sizeValue)}</span></div>
+                </div>
+                <div class="sequence-item">
+                  <img alt="" src="${escapeAttr(sceneTwo?.url || hero.url)}" />
+                  <div class="caption"><span>${escapeHTML(sceneTwo?.caption || "细节特写 / 说明页")}</span><span>${escapeHTML(sceneTwo?.size || state.config.sizeValue)}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="closing-note">生成完成后，你可以直接把接口返回的整套模块图做成一页长详情，适合天猫、淘宝和拼多多商品详情页。</div>
+        `;
+        resultGrid.appendChild(page);
 
         progressLabel.textContent = statusLabel;
-        runtimeSummary.textContent = `${statusLabel} · 已产出 ${list.length} 张结果`;
+        runtimeSummary.textContent = `${statusLabel} · 已产出 ${list.length} 个模块`;
       }
 
       function getDemoOutputs() {
