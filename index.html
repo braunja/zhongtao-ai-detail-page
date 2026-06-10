@@ -2140,6 +2140,24 @@
                 </select>
               </div>
               <div class="field">
+                <label for="providerVendor">模型提供方</label>
+                <select id="providerVendor">
+                  <option value="gemini">Gemini / Google</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="claude">Claude</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="openrouter">OpenRouter</option>
+                  <option value="ollama">Ollama</option>
+                  <option value="lmstudio">LM Studio</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>模型列表</label>
+                <div class="codebox" id="modelCatalogPreview" style="min-height:140px;max-height:240px;overflow:auto;"></div>
+                <div class="field-help">先选提供方，再自动拉取或直接从内置模型库显示可用模型。</div>
+              </div>
+              <div class="field">
                 <label for="apiBaseUrl">API Base URL</label>
                 <input id="apiBaseUrl" type="url" placeholder="https://your-domain.com/api" />
               </div>
@@ -2215,6 +2233,7 @@
 
       const defaultConfig = {
         mode: "custom-json",
+        providerVendor: "gemini",
         apiBaseUrl: "",
         apiKey: "",
         customEndpoint: "/v1beta/models/{model}",
@@ -2222,6 +2241,57 @@
         sizeValue: "1200",
         outputCount: 4,
         promptTemplate: DEFAULT_PROMPT,
+      };
+
+      const PROVIDER_CATALOG = {
+        gemini: {
+          label: "Gemini / Google",
+          baseUrl: "https://generativelanguage.googleapis.com",
+          endpoint: "/v1beta/models/{model}",
+          models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-image-preview", "gemini-3-pro-preview", "gemini-3-flash-preview", "Nano Banana", "Nano Banana Pro"],
+        },
+        openai: {
+          label: "OpenAI",
+          baseUrl: "https://api.openai.com",
+          endpoint: "/v1/models/{model}",
+          models: ["gpt-image-1", "gpt-4.1-mini", "gpt-4.1", "gpt-4o", "gpt-4o-mini"],
+        },
+        claude: {
+          label: "Claude",
+          baseUrl: "https://api.anthropic.com",
+          endpoint: "/v1/models/{model}",
+          models: ["claude-3-5-sonnet-20241022", "claude-3-7-sonnet-20250219", "claude-3-opus-20240229"],
+        },
+        deepseek: {
+          label: "DeepSeek",
+          baseUrl: "https://api.deepseek.com",
+          endpoint: "/v1/models/{model}",
+          models: ["deepseek-chat", "deepseek-reasoner"],
+        },
+        openrouter: {
+          label: "OpenRouter",
+          baseUrl: "https://openrouter.ai",
+          endpoint: "/api/v1/models/{model}",
+          models: ["google/gemini-2.5-flash", "openai/gpt-4.1-mini", "anthropic/claude-3.5-sonnet"],
+        },
+        ollama: {
+          label: "Ollama",
+          baseUrl: "http://localhost:11434",
+          endpoint: "/api/tags",
+          models: ["llama3.2", "qwen2.5", "gemma3", "mistral"],
+        },
+        lmstudio: {
+          label: "LM Studio",
+          baseUrl: "http://localhost:1234",
+          endpoint: "/v1/models",
+          models: ["local-model"],
+        },
+        custom: {
+          label: "自定义",
+          baseUrl: "",
+          endpoint: "/models",
+          models: [],
+        },
       };
 
       const fileInput = document.getElementById("fileInput");
@@ -2258,10 +2328,12 @@
       const apiKeyInput = document.getElementById("apiKey");
       const customEndpointInput = document.getElementById("customEndpoint");
       const providerModeInput = document.getElementById("providerMode");
+      const providerVendorInput = document.getElementById("providerVendor");
       const modelNameInput = document.getElementById("modelName");
       const sizeValueInput = document.getElementById("sizeValue");
       const modelNameHelp = document.getElementById("modelNameHelp");
       const modelNamePresetList = document.getElementById("modelNamePresetList");
+      const modelCatalogPreview = document.getElementById("modelCatalogPreview");
       const outputCountInput = document.getElementById("outputCount");
       const modalPromptInput = document.getElementById("modalPrompt");
       const payloadPreview = document.getElementById("payloadPreview");
@@ -2728,30 +2800,45 @@
       function renderModelOptions(models) {
         const list = models.length ? models : [
           "gpt-image-1",
-          "gpt-4.1-mini",
           "gemini-2.5-flash",
-          "gemini-2.5-pro",
-          "custom-workflow",
+          "claude-3-5-sonnet-20241022",
+          "deepseek-chat",
         ];
         modelNamePresetList.innerHTML = list.map((name) => `<option value="${escapeAttr(name)}"></option>`).join("");
       }
 
+      function renderProviderCatalog(vendor) {
+        const item = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        const lines = [
+          `提供方：${item.label}`,
+          `API 主机：${item.baseUrl || "自定义填写"}`,
+          `模型路径：${item.endpoint}`,
+          "",
+          "内置模型：",
+          ...(item.models.length ? item.models.map((m) => `- ${m}`) : ["- 暂无，使用自动拉取"]),
+        ];
+        modelCatalogPreview.textContent = lines.join("\n");
+      }
+
       function syncEndpointTemplateFromModel() {
-        const base = String(apiBaseUrlInput.value || state.config.apiBaseUrl || "").trim();
+        const vendor = providerVendorInput?.value || state.config.providerVendor || "gemini";
+        const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        const base = String(apiBaseUrlInput.value || state.config.apiBaseUrl || preset.baseUrl || "").trim();
         const model = normalizeModelName(modelNameInput.value || state.config.modelName);
         if (!base || !model) return;
-        if (/googleapis\.com/i.test(base) || /generativelanguage/i.test(base)) {
-          if (!String(customEndpointInput.value || "").trim() || String(customEndpointInput.value || "").includes("{model}")) {
-            customEndpointInput.value = `/v1beta/models/{model}`;
-          }
+        const currentEndpoint = String(customEndpointInput.value || "").trim();
+        if (!currentEndpoint || currentEndpoint.includes("{model}") || currentEndpoint === preset.endpoint) {
+          customEndpointInput.value = preset.endpoint || "/models/{model}";
         }
       }
 
       async function fetchModelsFromEndpoint() {
         const config = state.config;
-        const base = String(config.apiBaseUrl || "").trim();
+        const vendor = config.providerVendor || "gemini";
+        const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        const base = String(config.apiBaseUrl || preset.baseUrl || "").trim();
         if (!base) {
-          throw new Error("请先填写 API Base URL 或完整接口地址。");
+          throw new Error("请先填写 API Base URL。");
         }
         const baseUrl = new URL(base.endsWith("/") ? base : `${base}/`);
         const tries = [];
@@ -2760,30 +2847,17 @@
         const authHeaders = buildHeaders(config);
         delete authHeaders["Content-Type"];
 
-        if (config.mode === "openai-images") {
-          tries.push(`${origin}/v1/models`);
-        }
-        if (/googleapis\.com/i.test(origin) || /generativelanguage/i.test(origin)) {
-          tries.push(`${origin}/v1beta/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
-          tries.push(`${origin}/v1/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
-        } else {
-          tries.push(`${origin}/models`);
-          tries.push(`${origin}/v1/models`);
-          tries.push(`${origin}/v1beta/models`);
-        }
-
-        const customBase = String(config.customEndpoint || "").trim();
-        if (customBase && !customBase.includes("{model}")) {
-          try {
-            const candidate = new URL(customBase.startsWith("/") ? customBase : `/${customBase}`, origin);
-            const parent = candidate.pathname.split("/").slice(0, -1).join("/") || "";
-            if (parent) {
-              tries.push(`${origin}${parent}/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
-            }
-          } catch {
-            // ignore malformed custom endpoint while probing models
-          }
-        }
+        const vendorTries = {
+          gemini: [`${origin}/v1beta/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`, `${origin}/v1/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`],
+          openai: [`${origin}/v1/models`],
+          claude: [`${origin}/v1/models`],
+          deepseek: [`${origin}/v1/models`],
+          openrouter: [`${origin}/api/v1/models`],
+          ollama: [`${origin}/api/tags`],
+          lmstudio: [`${origin}/v1/models`],
+          custom: [`${origin}/models`, `${origin}/v1/models`, `${origin}/v1beta/models`],
+        };
+        tries.push(...(vendorTries[vendor] || vendorTries.custom));
 
         const seen = new Set();
         for (const url of tries) {
@@ -2809,11 +2883,18 @@
           }
         }
 
-        throw new Error("未能自动获取模型列表，请检查接口是否支持 GET /models 或手动填写模型名。");
+        const fallbackModels = (preset.models || []).slice();
+        if (fallbackModels.length) {
+          modelNameHelp.textContent = `接口暂时没有返回模型列表，已显示 ${fallbackModels.length} 个内置模型。`;
+          return fallbackModels;
+        }
+
+        throw new Error("未能自动获取模型列表，请检查接口是否支持模型列表接口。");
       }
 
       function syncFieldsFromConfig() {
         providerModeInput.value = state.config.mode;
+        providerVendorInput.value = state.config.providerVendor || defaultConfig.providerVendor;
         apiBaseUrlInput.value = state.config.apiBaseUrl;
         apiKeyInput.value = state.config.apiKey;
         customEndpointInput.value = state.config.customEndpoint;
@@ -2823,6 +2904,7 @@
         modalPromptInput.value = state.config.promptTemplate;
         promptInput.value = state.config.promptTemplate;
         modelNameHelp.textContent = "页面会尝试从 API Base URL 自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。";
+        renderProviderCatalog(providerVendorInput.value || defaultConfig.providerVendor);
         syncEndpointTemplateFromModel();
         updateSummaryCards();
         updatePayloadPreview();
@@ -2895,6 +2977,23 @@
         payloadPreview.textContent = JSON.stringify(preview, null, 2);
       }
 
+      function updateProviderPanel() {
+        renderProviderCatalog(providerVendorInput.value || defaultConfig.providerVendor);
+        const vendor = providerVendorInput.value || defaultConfig.providerVendor;
+        const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        if (!apiBaseUrlInput.value.trim() && preset.baseUrl) {
+          apiBaseUrlInput.value = preset.baseUrl;
+        }
+        if ((!customEndpointInput.value.trim() || customEndpointInput.value.includes("{model}")) && preset.endpoint) {
+          customEndpointInput.value = preset.endpoint;
+        }
+        if (!modelNameInput.value.trim() && preset.models[0]) {
+          modelNameInput.value = preset.models[0];
+        }
+        renderModelOptions(preset.models);
+        updatePayloadPreview();
+      }
+
       function syncEndpointWhenModelChanges() {
         syncEndpointTemplateFromModel();
         updatePayloadPreview();
@@ -2905,6 +3004,7 @@
         try {
           const models = await fetchModelsFromEndpoint();
           renderModelOptions(models);
+          modelCatalogPreview.textContent = `提供方：${(PROVIDER_CATALOG[providerVendorInput.value || defaultConfig.providerVendor] || PROVIDER_CATALOG.custom).label}\n\n自动拉取到的模型：\n${models.map((m) => `- ${m}`).join("\n")}`;
           modelNameHelp.textContent = `已自动获取 ${models.length} 个模型/工作流名称，直接选一个即可。`;
           if (!String(modelNameInput.value || "").trim() && models[0]) {
             modelNameInput.value = models[0];
@@ -2913,8 +3013,11 @@
           updatePayloadPreview();
           if (notify) showToast("模型列表已更新", `已获取 ${models.length} 个可用模型/工作流名称。`);
         } catch (error) {
-          renderModelOptions([]);
-          modelNameHelp.textContent = error?.message || "自动获取失败，请手动输入模型名。";
+          const vendor = providerVendorInput.value || defaultConfig.providerVendor;
+          const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+          renderModelOptions(preset.models);
+          modelCatalogPreview.textContent = `提供方：${preset.label}\n\n内置模型：\n${(preset.models.length ? preset.models : ["暂无"]).map((m) => `- ${m}`).join("\n")}`;
+          modelNameHelp.textContent = error?.message || "自动获取失败，已回退到内置模型库。";
           if (notify) showToast("自动获取失败", error?.message || "请确认接口支持模型列表读取。");
         }
       }
@@ -2950,6 +3053,7 @@
       function saveModalConfig() {
         state.config = cloneConfig({
           mode: providerModeInput.value,
+          providerVendor: providerVendorInput.value,
           apiBaseUrl: apiBaseUrlInput.value.trim(),
           apiKey: apiKeyInput.value.trim(),
           customEndpoint: customEndpointInput.value.trim(),
@@ -2976,6 +3080,18 @@
         syncFieldsFromConfig();
         updatePromptStatus("已恢复默认");
         showToast("已恢复默认配置", "接口字段和提示词模板都回到初始状态。");
+      }
+
+      function onProviderVendorChange() {
+        const vendor = providerVendorInput.value || defaultConfig.providerVendor;
+        const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        renderProviderCatalog(vendor);
+        if (preset.baseUrl) apiBaseUrlInput.value = preset.baseUrl;
+        if (preset.endpoint) customEndpointInput.value = preset.endpoint;
+        if (preset.models[0]) modelNameInput.value = preset.models[0];
+        renderModelOptions(preset.models);
+        syncEndpointTemplateFromModel();
+        updatePayloadPreview();
       }
 
       function validateConfig(config = state.config) {
@@ -3607,6 +3723,7 @@
       sizeValueInput.addEventListener("input", updatePayloadPreview);
       outputCountInput.addEventListener("input", updatePayloadPreview);
       providerModeInput.addEventListener("change", updatePayloadPreview);
+      providerVendorInput.addEventListener("change", onProviderVendorChange);
       apiBaseUrlInput.addEventListener("input", () => {
         syncEndpointTemplateFromModel();
         updatePayloadPreview();
