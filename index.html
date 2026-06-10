@@ -2159,7 +2159,7 @@
                 <input id="modelName" type="text" list="modelNamePresetList" placeholder="点击自动获取，或手动填写" />
                 <datalist id="modelNamePresetList"></datalist>
                 <div class="field-help" id="modelNameHelp">
-                  页面会尝试从接口自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。
+                  页面会尝试从 API Base URL 自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。
                 </div>
               </div>
               <div class="field">
@@ -2749,26 +2749,40 @@
 
       async function fetchModelsFromEndpoint() {
         const config = state.config;
-        const endpoint = buildEndpoint(config);
-        if (!endpoint) {
+        const base = String(config.apiBaseUrl || "").trim();
+        if (!base) {
           throw new Error("请先填写 API Base URL 或完整接口地址。");
         }
-        const baseUrl = new URL(endpoint);
+        const baseUrl = new URL(base.endsWith("/") ? base : `${base}/`);
         const tries = [];
-        const path = baseUrl.pathname.replace(/\/+$/, "");
         const origin = baseUrl.origin;
+        const apiKey = String(config.apiKey || "").trim();
         const authHeaders = buildHeaders(config);
         delete authHeaders["Content-Type"];
 
         if (config.mode === "openai-images") {
           tries.push(`${origin}/v1/models`);
         }
-        tries.push(`${origin}/models`);
-        tries.push(`${origin}/v1/models`);
-        tries.push(`${origin}/v1beta/models`);
-        if (path && path !== "/") {
-          const parent = path.split("/").slice(0, -1).join("/") || "";
-          tries.push(`${origin}${parent}/models`);
+        if (/googleapis\.com/i.test(origin) || /generativelanguage/i.test(origin)) {
+          tries.push(`${origin}/v1beta/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
+          tries.push(`${origin}/v1/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
+        } else {
+          tries.push(`${origin}/models`);
+          tries.push(`${origin}/v1/models`);
+          tries.push(`${origin}/v1beta/models`);
+        }
+
+        const customBase = String(config.customEndpoint || "").trim();
+        if (customBase && !customBase.includes("{model}")) {
+          try {
+            const candidate = new URL(customBase.startsWith("/") ? customBase : `/${customBase}`, origin);
+            const parent = candidate.pathname.split("/").slice(0, -1).join("/") || "";
+            if (parent) {
+              tries.push(`${origin}${parent}/models${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`);
+            }
+          } catch {
+            // ignore malformed custom endpoint while probing models
+          }
         }
 
         const seen = new Set();
@@ -2808,7 +2822,7 @@
         outputCountInput.value = state.config.outputCount;
         modalPromptInput.value = state.config.promptTemplate;
         promptInput.value = state.config.promptTemplate;
-        modelNameHelp.textContent = "页面会尝试从接口自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。";
+        modelNameHelp.textContent = "页面会尝试从 API Base URL 自动拉取模型列表；如果拉取失败，也可以手动输入你接口实际支持的模型名。";
         syncEndpointTemplateFromModel();
         updateSummaryCards();
         updatePayloadPreview();
