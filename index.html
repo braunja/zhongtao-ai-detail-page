@@ -1350,6 +1350,59 @@
         font-size: 12px;
       }
 
+      .model-catalog {
+        display: grid;
+        gap: 10px;
+        max-height: 240px;
+        overflow: auto;
+        padding-right: 6px;
+      }
+
+      .model-card {
+        width: 100%;
+        text-align: left;
+        border: 1px solid rgba(40, 34, 28, 0.1);
+        background: rgba(255, 255, 255, 0.84);
+        border-radius: 16px;
+        padding: 12px 14px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .model-card:hover {
+        border-color: rgba(159, 125, 44, 0.34);
+        box-shadow: 0 8px 18px rgba(57, 48, 33, 0.08);
+      }
+
+      .model-card.active {
+        border-color: rgba(47, 109, 93, 0.42);
+        background: linear-gradient(135deg, rgba(47, 109, 93, 0.08), rgba(159, 125, 44, 0.08));
+      }
+
+      .model-card-name {
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .model-card-sub {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .model-card-tag {
+        flex: none;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(35, 31, 26, 0.06);
+        color: rgba(35, 31, 26, 0.7);
+      }
+
       .toast {
         position: fixed;
         right: 18px;
@@ -2154,8 +2207,8 @@
               </div>
               <div class="field">
                 <label>模型列表</label>
-                <div class="codebox" id="modelCatalogPreview" style="min-height:140px;max-height:240px;overflow:auto;"></div>
-                <div class="field-help">先选提供方，再自动拉取或直接从内置模型库显示可用模型。</div>
+                <div class="model-catalog" id="modelCatalogPreview"></div>
+                <div class="field-help">先选提供方，再自动拉取或直接从内置模型库显示可用模型；点一下模型就会自动填入。</div>
               </div>
               <div class="field">
                 <label for="apiBaseUrl">API Base URL</label>
@@ -2807,17 +2860,26 @@
         modelNamePresetList.innerHTML = list.map((name) => `<option value="${escapeAttr(name)}"></option>`).join("");
       }
 
-      function renderProviderCatalog(vendor) {
+      function renderProviderCatalog(vendor, models = null) {
         const item = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
-        const lines = [
-          `提供方：${item.label}`,
-          `API 主机：${item.baseUrl || "自定义填写"}`,
-          `模型路径：${item.endpoint}`,
-          "",
-          "内置模型：",
-          ...(item.models.length ? item.models.map((m) => `- ${m}`) : ["- 暂无，使用自动拉取"]),
-        ];
-        modelCatalogPreview.textContent = lines.join("\n");
+        const list = models && models.length ? models : item.models;
+        modelCatalogPreview.innerHTML = list.length
+          ? list
+              .map((name) => {
+                const active = normalizeModelName(modelNameInput.value || state.config.modelName) === name ? "active" : "";
+                const label = name.includes("/") ? "组合模型" : "模型";
+                return `
+                  <button class="model-card ${active}" type="button" data-model="${escapeAttr(name)}">
+                    <div>
+                      <div class="model-card-name">${escapeHTML(name)}</div>
+                      <div class="model-card-sub">${escapeHTML(item.label)} · ${escapeHTML(label)}</div>
+                    </div>
+                    <div class="model-card-tag">选择</div>
+                  </button>
+                `;
+              })
+              .join("")
+          : `<div class="field-help">当前提供方没有内置模型，点击“自动获取模型”后再刷新。</div>`;
       }
 
       function syncEndpointTemplateFromModel() {
@@ -2830,6 +2892,16 @@
         if (!currentEndpoint || currentEndpoint.includes("{model}") || currentEndpoint === preset.endpoint) {
           customEndpointInput.value = preset.endpoint || "/models/{model}";
         }
+      }
+
+      function selectModel(name) {
+        if (!name) return;
+        modelNameInput.value = name;
+        state.config.modelName = name;
+        syncEndpointTemplateFromModel();
+        renderProviderCatalog(providerVendorInput.value || defaultConfig.providerVendor);
+        updateSummaryCards();
+        updatePayloadPreview();
       }
 
       async function fetchModelsFromEndpoint() {
@@ -2895,6 +2967,7 @@
       function syncFieldsFromConfig() {
         providerModeInput.value = state.config.mode;
         providerVendorInput.value = state.config.providerVendor || defaultConfig.providerVendor;
+        customEndpointInput.readOnly = providerVendorInput.value !== "custom";
         apiBaseUrlInput.value = state.config.apiBaseUrl;
         apiKeyInput.value = state.config.apiKey;
         customEndpointInput.value = state.config.customEndpoint;
@@ -2981,6 +3054,7 @@
         renderProviderCatalog(providerVendorInput.value || defaultConfig.providerVendor);
         const vendor = providerVendorInput.value || defaultConfig.providerVendor;
         const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
+        customEndpointInput.readOnly = vendor !== "custom";
         if (!apiBaseUrlInput.value.trim() && preset.baseUrl) {
           apiBaseUrlInput.value = preset.baseUrl;
         }
@@ -3004,11 +3078,12 @@
         try {
           const models = await fetchModelsFromEndpoint();
           renderModelOptions(models);
-          modelCatalogPreview.textContent = `提供方：${(PROVIDER_CATALOG[providerVendorInput.value || defaultConfig.providerVendor] || PROVIDER_CATALOG.custom).label}\n\n自动拉取到的模型：\n${models.map((m) => `- ${m}`).join("\n")}`;
+          renderProviderCatalog(providerVendorInput.value || defaultConfig.providerVendor, models);
           modelNameHelp.textContent = `已自动获取 ${models.length} 个模型/工作流名称，直接选一个即可。`;
           if (!String(modelNameInput.value || "").trim() && models[0]) {
             modelNameInput.value = models[0];
           }
+          syncEndpointTemplateFromModel();
           updateSummaryCards();
           updatePayloadPreview();
           if (notify) showToast("模型列表已更新", `已获取 ${models.length} 个可用模型/工作流名称。`);
@@ -3016,7 +3091,7 @@
           const vendor = providerVendorInput.value || defaultConfig.providerVendor;
           const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
           renderModelOptions(preset.models);
-          modelCatalogPreview.textContent = `提供方：${preset.label}\n\n内置模型：\n${(preset.models.length ? preset.models : ["暂无"]).map((m) => `- ${m}`).join("\n")}`;
+          renderProviderCatalog(vendor, preset.models);
           modelNameHelp.textContent = error?.message || "自动获取失败，已回退到内置模型库。";
           if (notify) showToast("自动获取失败", error?.message || "请确认接口支持模型列表读取。");
         }
@@ -3086,6 +3161,7 @@
         const vendor = providerVendorInput.value || defaultConfig.providerVendor;
         const preset = PROVIDER_CATALOG[vendor] || PROVIDER_CATALOG.custom;
         renderProviderCatalog(vendor);
+        customEndpointInput.readOnly = vendor !== "custom";
         if (preset.baseUrl) apiBaseUrlInput.value = preset.baseUrl;
         if (preset.endpoint) customEndpointInput.value = preset.endpoint;
         if (preset.models[0]) modelNameInput.value = preset.models[0];
@@ -3724,6 +3800,11 @@
       outputCountInput.addEventListener("input", updatePayloadPreview);
       providerModeInput.addEventListener("change", updatePayloadPreview);
       providerVendorInput.addEventListener("change", onProviderVendorChange);
+      modelCatalogPreview.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-model]");
+        if (!button) return;
+        selectModel(button.dataset.model);
+      });
       apiBaseUrlInput.addEventListener("input", () => {
         syncEndpointTemplateFromModel();
         updatePayloadPreview();
